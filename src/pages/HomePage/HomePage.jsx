@@ -17,7 +17,7 @@ const HomePage = () => {
       id: 2,
       title: 'Student',
       buttonText: 'Click to Register Student',
-      path: '/register/student'
+      path: '/register-student'
     },
     {
       id: 3,
