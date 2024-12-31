@@ -1,8 +1,8 @@
 import axios from "axios";
-import { baseUrl } from "../config";
+import { baseUrl, baseVercelUrl } from "../config";
 
 const userRequest = axios.create({
-    baseURL: baseUrl,
+    baseURL: baseVercelUrl,
     withCredentials: true,
 });
 
