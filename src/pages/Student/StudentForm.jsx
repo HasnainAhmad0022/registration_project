@@ -26,8 +26,8 @@ const MembershipForm = () => {
   };
 
   return (
-    <div className="p-3 rounded-lg bg-white">
-    <div className="max-w-6xl mx-auto p-6 relative bg-gray-100">
+    <div className="p-3 rounded-lg bg-gray-100">
+    <div className="max-w-6xl mx-auto p-6 relative bg-white">
       {/* Watermark */}
       <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
         <img 
