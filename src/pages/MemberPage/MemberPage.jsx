@@ -49,8 +49,8 @@ const MemberPage = () => {
             {/* Green banner with curved edges */}
             <div className="bg-[#004F25] text-white relative">
               {/* Light green accent on edges */}
-              <div className="absolute left-0 top-0 bottom-0 w-8 bg-[#90CE5F] rounded-l-lg"></div>
-              <div className="absolute right-0 top-0 bottom-0 w-8 bg-[#90CE5F] rounded-r-lg"></div>
+              <div className="absolute left-0 top-0 bottom-0 w-8 bg-[#90CE5F] rounded-r-lg"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-[#90CE5F] rounded-l-lg"></div>
 
               <div className="flex items-center justify-between px-8 py-0">
                 {/* Left logo */}

@@ -119,7 +119,7 @@ const DisablePerson = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
     <div className="p-3 rounded-lg bg-gray-100">
-      <div className="max-w-5xl mx-auto p-6 bg-white relative border border-gray-300">
+      <div className="max-w-6xl mx-auto p-6 bg-white relative border border-gray-300">
         {/* Watermark */}
         <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
           <img 
@@ -129,19 +129,63 @@ const DisablePerson = () => {
           />
         </div>
 
-        {/* Header */}
-        <div className="flex items-center justify-center mb-6">
-          <div className="w-full flex justify-between items-center gap-4">
-            <div className="w-16 h-16 rounded-full border-2 flex items-center justify-center">
-              <img src={backgroundlogo} alt="Emblem" className="w-12 h-12" />
+        {/* Header Banner */}
+        <div className="rounded-lg p-1 bg-white">
+          <div className="relative">
+            {/* Green banner with curved edges */}
+            <div className="bg-[#004F25] text-white relative">
+              {/* Light green accent on edges */}
+              <div className="absolute left-0 top-0 bottom-0 w-8 bg-[#90CE5F] rounded-r-lg"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-[#90CE5F] rounded-l-lg"></div>
+
+              <div className="flex items-center justify-between px-8 py-0">
+                {/* Left logo */}
+                <div className="w-32 h-24 bg-white p-2 rounded-lg">
+                  <img
+                    src={backgroundlogo}
+                    alt="Help System Logo"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                {/* Center text */}
+                <div className="text-center space-y-1">
+                  <h1 className="text-4xl font-extrabold">HELP SYSTEM</h1>
+                  <h2 className="text-2xl font-bold">KHYBER PUKHTUNKHWA</h2>
+                  <p className="text-xl font-semibold">
+                    Voluntary Social Welfare Organization
+                  </p>
+                  <p className="text-xl font-semibold">
+                    Health Education Livelihood & Peace for All
+                  </p>
+                </div>
+
+                {/* Right QR code */}
+                <div className="w-32 h-24 bg-white p-2 rounded-lg">
+                  <img
+                    src={backgroundlogo}
+                    alt="QR Code"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </div>
             </div>
-            <div className='text-center'>
-              <h1 className="text-3xl font-bold">GOVERNMENT OF KHYBER PAKHTUNKHWA</h1>
-              <p className="text-xl">(PROVINCIAL COUNCIL FOR THE REHABILITATION OF DISABLED PERSON)</p>
+
+            {/* Membership Form Button */}
+            <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
+              <div className="relative">
+                {/* Green pill background */}
+                <div className="absolute inset-0 bg-[#90CE5F] rounded-full -z-10 transform scale-x-125"></div>
+                <div className="bg-[#004F25] text-white px-12 py-2 rounded-lg font-bold text-xl">
+                  Membership Form
+                </div>
+              </div>
             </div>
-            <div className="w-16 h-16 rounded-full border-2 flex items-center justify-center">
-              <img src={backgroundlogo} alt="Emblem" className="w-12 h-12" />
-            </div>
+          </div>
+
+          {/* Membership ID */}
+          <div className="text-right mt-16 mr-4 font-semibold">
+            MEMBERSHIP ID: _____________
           </div>
         </div>
 

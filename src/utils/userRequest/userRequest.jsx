@@ -2,7 +2,7 @@ import axios from "axios";
 import { baseUrl, baseVercelUrl } from "../config";
 
 const userRequest = axios.create({
-    baseURL: baseVercelUrl,
+    baseURL: baseUrl,
     withCredentials: true,
 });
 
