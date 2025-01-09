@@ -17,6 +17,7 @@ const Login = () => {
       const res = await userRequest.post("/users/login", { email, password });
       console.log(res);
       toast.success(res?.data?.message || "Login successful");
+      sessionStorage.setItem("userData", JSON.stringify(res?.data));
       navigate("/home-page");
       setLoading(false);
     } catch (err) {

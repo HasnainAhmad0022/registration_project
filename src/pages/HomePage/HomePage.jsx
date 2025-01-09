@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Card from '../../components/Card/Card';
 import { useNavigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import Navbar from '../../components/Navbar/Navbar';
 
 const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -39,6 +41,8 @@ const HomePage = () => {
   };
 
   return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
     <div className="container mx-auto p-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {cardData.map((card) => (
@@ -48,10 +52,13 @@ const HomePage = () => {
             title={card.title}
             buttonText={card.buttonText}
             onClick={() => handleCardClick(card.path)}
-          />
-        ))}
+            />
+          ))}
       </div>
+
+      <Toaster />
     </div>
+  </div>
   );
 };
 

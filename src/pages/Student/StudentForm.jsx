@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import backgroundlogo from '../../images/backgroundlogo.png';
+import Navbar from '../../components/Navbar/Navbar';
 
 const MembershipForm = () => {
   // Create refs for CNIC inputs
@@ -26,6 +27,8 @@ const MembershipForm = () => {
   };
 
   return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
     <div className="p-3 rounded-lg bg-gray-100">
     <div className="max-w-6xl mx-auto p-6 relative bg-white">
       {/* Watermark */}
@@ -392,8 +395,9 @@ const MembershipForm = () => {
           </button>
         </div>
       </form>
+     </div>
     </div>
-    </div>
+   </div>
   );
 };
 
