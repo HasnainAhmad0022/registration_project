@@ -1,19 +1,81 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import backgroundlogo from "../../images/backgroundlogo.png";
 import Navbar from "../../components/Navbar/Navbar";
+import userRequest from "../../utils/userRequest/userRequest";
+import toast, { Toaster } from "react-hot-toast";
 
 const MemberPage = () => {
-  // Create refs for CNIC inputs
-  const cnicRefs = Array(13)
-    .fill(0)
-    .map(() => useRef(null));
-  const fatherCnicRefs = Array(13)
-    .fill(0)
-    .map(() => useRef(null));
+  const navigate = useNavigate();
+  const userData = JSON.parse(sessionStorage.getItem("userData"));
 
-  const handleCnicInput = (e, index, refs) => {
+  // Create refs for CNIC inputs
+  const cnicRefs = Array(13).fill(0).map(() => useRef(null));
+  const fatherCnicRefs = Array(13).fill(0).map(() => useRef(null));
+
+  const initialFormState = {
+    childName: "",
+    cnicNo: "",
+    relation: "father",
+    relationCnic: "",
+    dateOfBirth: "",
+    gender: "",
+    maritalStatus: "",
+    nationality: "",
+    tehsil: "",
+    district: "",
+    religion: "",
+    bloodGroup: "",
+    qualification: "",
+    profession: "",
+    currentAddress: "",
+    permanentAddress: "",
+    contactNumber: "",
+    contactNumber2: "",
+    TypeOfAccommodation: "",
+    noOfDependents: "",
+    noOfChildren: "",
+    noOfChildrenMale: "",
+    noOfChildrenFemale: "",
+    noOfChildrenInSchool: "",
+    nameOfSchoolChildren: [
+      { name: "", class: "", age: "", SchoolName: "" },
+      { name: "", class: "", age: "", SchoolName: "" }
+    ],
+    addictiveDrugs: "",
+    addictiveDrugsDescription: "",
+    anyDisability: "",
+    anyDisabilityDescription: "",
+    politicalAffiliation: "",
+    politicalAffiliationDescription: "",
+    NGO: "",
+    NGODescription: ""
+  };
+
+  const [formData, setFormData] = useState(initialFormState);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleChildrenDetailsChange = (index, field, value) => {
+    const updatedChildren = [...formData.nameOfSchoolChildren];
+    updatedChildren[index] = {
+      ...updatedChildren[index],
+      [field]: value
+    };
+    setFormData(prev => ({
+      ...prev,
+      nameOfSchoolChildren: updatedChildren
+    }));
+  };
+
+  const handleCnicInput = (e, index, refs, type) => {
     const value = e.target.value;
-    // Only allow numbers
     if (!/^\d*$/.test(value)) {
       e.target.value = "";
       return;
@@ -21,132 +83,134 @@ const MemberPage = () => {
     if (value.length === 1 && index < 12) {
       refs[index + 1].current.focus();
     }
+
+    // Update CNIC in formData
+    const allCnicInputs = refs.map(ref => ref.current.value);
+    allCnicInputs[index] = value;
+    const cnicString = `${allCnicInputs.slice(0,5).join('')}-${allCnicInputs.slice(5,12).join('')}-${allCnicInputs[12] || ''}`;
+    
+    if (type === 'primary') {
+      setFormData(prev => ({ ...prev, cnicNo: cnicString }));
+    } else {
+      setFormData(prev => ({ ...prev, relationCnic: cnicString }));
+    }
   };
 
-  // Handle backspace key
   const handleKeyDown = (e, refs, index) => {
     if (e.key === "Backspace" && e.target.value === "" && index > 0) {
       refs[index - 1].current.focus();
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    try {
+      const submitData = {
+        ...formData,
+        userId: userData?.data?.user?._id
+      };
+
+      const response = await userRequest.post("/member/addnewmember", submitData);
+      
+      toast.success(response?.data?.message || "Member added successfully");
+      
+      // Clear form
+      setFormData(initialFormState);
+      
+      // Clear CNIC inputs
+      cnicRefs.forEach(ref => {
+        if (ref.current) ref.current.value = '';
+      });
+      fatherCnicRefs.forEach(ref => {
+        if (ref.current) ref.current.value = '';
+      });
+
+      // Navigate to home page after delay
+      setTimeout(() => {
+        navigate('/home-page');
+      }, 1500);
+
+    } catch (err) {
+      console.error("Error:", err);
+      toast.error(
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        "Failed to add member"
+      );
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-    <div className="p-3 rounded-lg bg-gray-100">
-      <div className="max-w-6xl mx-auto p-6 relative bg-white">
-        {/* Watermark */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
-          <img
-            src={backgroundlogo}
-            alt="Watermark"
-            className="w-[700px] h-[700px] object-contain"
-          />
-        </div>
-        {/* Header Banner */}
-        <div className="rounded-lg p-1 bg-white">
-          <div className="relative">
-            {/* Green banner with curved edges */}
-            <div className="bg-[#004F25] text-white relative">
-              {/* Light green accent on edges */}
-              <div className="absolute left-0 top-0 bottom-0 w-8 bg-[#90CE5F] rounded-r-lg"></div>
-              <div className="absolute right-0 top-0 bottom-0 w-8 bg-[#90CE5F] rounded-l-lg"></div>
-
-              <div className="flex items-center justify-between px-8 py-0">
-                {/* Left logo */}
-                <div className="w-32 h-24 bg-white p-2 rounded-lg">
-                  <img
-                    src={backgroundlogo}
-                    alt="Help System Logo"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-
-                {/* Center text */}
-                <div className="text-center space-y-1">
-                  <h1 className="text-4xl font-extrabold">HELP SYSTEM</h1>
-                  <h2 className="text-2xl font-bold">KHYBER PUKHTUNKHWA</h2>
-                  <p className="text-xl font-semibold">
-                    Voluntary Social Welfare Organization
-                  </p>
-                  <p className="text-xl font-semibold">
-                    Health Education Livelihood & Peace for All
-                  </p>
-                </div>
-
-                {/* Right QR code */}
-                <div className="w-32 h-24 bg-white p-2 rounded-lg">
-                  <img
-                    src={backgroundlogo}
-                    alt="QR Code"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Membership Form Button */}
-            <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2">
-              <div className="relative">
-                {/* Green pill background */}
-                <div className="absolute inset-0 bg-[#90CE5F] rounded-full -z-10 transform scale-x-125"></div>
-                <div className="bg-[#004F25] text-white px-12 py-2 rounded-lg font-bold text-xl">
-                  Membership Form
-                </div>
-              </div>
-            </div>
+      <div className="p-3 rounded-lg bg-gray-100">
+        <div className="max-w-6xl mx-auto p-6 relative bg-white">
+          {/* Watermark */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+            <img
+              src={backgroundlogo}
+              alt="Watermark"
+              className="w-[700px] h-[700px] object-contain"
+            />
           </div>
 
-          {/* Membership ID */}
-          <div className="text-right mt-16 mr-4 font-semibold">
-            MEMBERSHIP ID: _____________
-          </div>
-        </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* 1. Personal Details */}
+            <div className="space-y-4">
+              <h4 className="font-bold">1. Personal Details</h4>
 
-        <form className="space-y-6">
-          {/* 1. Personal Details */}
-          <div className="space-y-4">
-            <h4 className="font-bold">1. Personal Details</h4>
-
-            {/* Name and CNIC */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <label>Full Name</label>
-                <input
-                  type="text"
-                  className="flex-1 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-              <div className="flex items-center gap-1">
-                <label>CNIC</label>
-                {[...Array(13)].map((_, i) => (
-                  <React.Fragment key={`cnic-${i}`}>
-                    <input
-                      type="text"
-                      className="w-8 h-8 border border-gray-400 text-center bg-transparent"
-                      maxLength="1"
-                      ref={cnicRefs[i]}
-                      onChange={(e) => handleCnicInput(e, i, cnicRefs)}
-                      onKeyDown={(e) => handleKeyDown(e, cnicRefs, i)}
-                    />
-                    {(i === 4 || i === 11) && <span>-</span>}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-
-            {/* Father/Husband and CNIC */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <label>Father/Husband</label>
-                <input
-                  type="text"
-                  className="flex-1 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label>CNIC</label>
+              {/* Name and CNIC */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <label>Full Name</label>
+                  <input
+                    type="text"
+                    name="childName"
+                    value={formData.childName}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+                {/* CNIC Input */}
                 <div className="flex items-center gap-1">
+                  <label>CNIC</label>
+                  {[...Array(13)].map((_, i) => (
+                    <React.Fragment key={`cnic-${i}`}>
+                      <input
+                        type="text"
+                        className="w-8 h-8 border border-gray-400 text-center bg-transparent"
+                        maxLength="1"
+                        ref={cnicRefs[i]}
+                        onChange={(e) => handleCnicInput(e, i, cnicRefs, 'primary')}
+                        onKeyDown={(e) => handleKeyDown(e, cnicRefs, i)}
+                        required
+                      />
+                      {(i === 4 || i === 11) && <span>-</span>}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+
+              {/* Father/Husband and CNIC */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <label>Father/Husband</label>
+                  <select
+                    name="relation"
+                    value={formData.relation}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 bg-transparent p-1"
+                    required
+                  >
+                    <option value="father">Father</option>
+                    <option value="husband">Husband</option>
+                  </select>
+                </div>
+                {/* Father/Relation CNIC Input */}
+                <div className="flex items-center gap-1">
+                  <label>CNIC</label>
                   {[...Array(13)].map((_, i) => (
                     <React.Fragment key={`father-cnic-${i}`}>
                       <input
@@ -154,379 +218,455 @@ const MemberPage = () => {
                         className="w-8 h-8 border border-gray-400 text-center bg-transparent"
                         maxLength="1"
                         ref={fatherCnicRefs[i]}
-                        onChange={(e) => handleCnicInput(e, i, fatherCnicRefs)}
+                        onChange={(e) => handleCnicInput(e, i, fatherCnicRefs, 'relation')}
                         onKeyDown={(e) => handleKeyDown(e, fatherCnicRefs, i)}
+                        required
                       />
                       {(i === 4 || i === 11) && <span>-</span>}
                     </React.Fragment>
                   ))}
                 </div>
               </div>
-            </div>
 
-            {/* Date of Birth and Gender */}
-            <div className="flex items-center gap-4">
-              <label>Date of Birth</label>
-              <div className="flex items-center gap-2">
+              {/* Date of Birth and Gender */}
+              <div className="flex items-center gap-4">
+                <label>Date of Birth</label>
                 <input
-                  type="text"
-                  placeholder="Month"
-                  className="w-16 border border-gray-400 bg-transparent p-1"
+                  type="date"
+                  name="dateOfBirth"
+                  value={formData.dateOfBirth}
+                  onChange={handleInputChange}
+                  className="border border-gray-400 bg-transparent p-1"
+                  required
                 />
-                <input
-                  type="text"
-                  placeholder="Day"
-                  className="w-16 border border-gray-400 bg-transparent p-1"
-                />
-                <input
-                  type="text"
-                  placeholder="Year"
-                  className="w-16 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-              <label>Gender</label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" /> Male
-                </label>
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" /> Female
-                </label>
-              </div>
-            </div>
-
-            {/* Marital Status */}
-            <div className="flex items-center gap-4">
-              <label>Marital Status</label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" /> Single
-                </label>
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" /> Married
-                </label>
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" /> Divorced
-                </label>
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" /> Widow
-                </label>
-              </div>
-            </div>
-
-            {/* Nationality and Religion */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <label>Nationality</label>
+                <label>Gender</label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-1">
-                    <input type="checkbox" /> Pakistani
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="male"
+                      checked={formData.gender === "male"}
+                      onChange={handleInputChange}
+                      required
+                    /> Male
                   </label>
                   <label className="flex items-center gap-1">
-                    <input type="checkbox" /> Other
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="female"
+                      checked={formData.gender === "female"}
+                      onChange={handleInputChange}
+                    /> Female
                   </label>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <label>Religion</label>
+
+              {/* Marital Status */}
+              <div className="flex items-center gap-4">
+                <label>Marital Status</label>
                 <div className="flex gap-4">
-                  <label className="flex items-center gap-1">
-                    <input type="checkbox" /> Muslim
-                  </label>
-                  <label className="flex items-center gap-1">
-                    <input type="checkbox" /> Other
-                  </label>
+                  {["single", "married", "divorced", "widow"].map((status) => (
+                    <label key={status} className="flex items-center gap-1">
+                      <input
+                        type="radio"
+                        name="maritalStatus"
+                        value={status}
+                        checked={formData.maritalStatus === status}
+                        onChange={handleInputChange}
+                        required
+                      /> 
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </label>
+                  ))}
                 </div>
               </div>
-            </div>
 
-            {/* Tehsil, District, Blood Group */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="flex items-center gap-2">
-                <label>Tehsil</label>
-                <input
-                  type="text"
-                  className="flex-1 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label>District</label>
-                <input
-                  type="text"
-                  className="flex-1 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label>Blood Group</label>
-                <input
-                  type="text"
-                  className="flex-1 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-            </div>
-
-            {/* Qualification and Profession */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <label>Qualification</label>
-                <input
-                  type="text"
-                  className="flex-1 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label>Profession</label>
-                <input
-                  type="text"
-                  className="flex-1 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-            </div>
-
-            {/* Addresses */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <label>Current Address</label>
-                <input
-                  type="text"
-                  className="flex-1 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label>Permanent Address</label>
-                <input
-                  type="text"
-                  className="flex-1 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-            </div>
-
-            {/* Contact Numbers */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <label>Contact Number</label>
-                <input
-                  type="text"
-                  className="flex-1 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label>Alternate Mobile Number</label>
-                <input
-                  type="text"
-                  className="flex-1 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-            </div>
-
-            {/* Type of Accommodation */}
-            <div className="flex items-center gap-4">
-              <label>Type of Accommodation</label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" /> Rented
-                </label>
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" /> Own
-                </label>
-                <label className="flex items-center gap-1">
-                  <input type="checkbox" /> Living with Others
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* 2. Family Details */}
-          <div className="space-y-4">
-            <h4 className="font-bold">2. Family Details</h4>
-
-            {/* Numbers Grid */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="flex items-center gap-2">
-                <label>1. No. of Dependents</label>
-                <input
-                  type="text"
-                  className="w-16 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label>2. No. of Children</label>
-                <input
-                  type="text"
-                  className="w-16 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label>3. No. of Male Children</label>
-                <input
-                  type="text"
-                  className="w-16 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label>4. No. of Female Children</label>
-                <input
-                  type="text"
-                  className="w-16 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label>5. No. of School going children</label>
-                <input
-                  type="text"
-                  className="w-16 border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-            </div>
-
-            {/* Children Details Table */}
-            <div>
-              <h5>6. Names & Ages of Children (studying in school)</h5>
+              {/* Nationality and Religion */}
               <div className="grid grid-cols-2 gap-4">
-                {[1, 2].map((tableNum) => (
-                  <table
-                    key={tableNum}
-                    className="w-full border-collapse border border-gray-400 bg-transparent"
+                <div className="flex items-center gap-2">
+                  <label>Nationality</label>
+                  <input
+                    type="text"
+                    name="nationality"
+                    value={formData.nationality}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label>Religion</label>
+                  <input
+                    type="text"
+                    name="religion"
+                    value={formData.religion}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Tehsil, District, Blood Group */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="flex items-center gap-2">
+                  <label>Tehsil</label>
+                  <input
+                    type="text"
+                    name="tehsil"
+                    value={formData.tehsil}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label>District</label>
+                  <input
+                    type="text"
+                    name="district"
+                    value={formData.district}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label>Blood Group</label>
+                  <input
+                    type="text"
+                    name="bloodGroup"
+                    value={formData.bloodGroup}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+              </div>
+                            {/* Qualification and Profession */}
+                            <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <label>Qualification</label>
+                  <input
+                    type="text"
+                    name="qualification"
+                    value={formData.qualification}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label>Profession</label>
+                  <input
+                    type="text"
+                    name="profession"
+                    value={formData.profession}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Address Information */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <label>Current Address</label>
+                  <input
+                    type="text"
+                    name="currentAddress"
+                    value={formData.currentAddress}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label>Permanent Address</label>
+                  <input
+                    type="text"
+                    name="permanentAddress"
+                    value={formData.permanentAddress}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <label>Contact Number</label>
+                  <input
+                    type="text"
+                    name="contactNumber"
+                    value={formData.contactNumber}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label>Alternative Contact</label>
+                  <input
+                    type="text"
+                    name="contactNumber2"
+                    value={formData.contactNumber2}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                  />
+                </div>
+              </div>
+
+              {/* Accommodation and Dependents */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <label>Type of Accommodation</label>
+                  <select
+                    name="TypeOfAccommodation"
+                    value={formData.TypeOfAccommodation}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
                   >
-                    <thead>
-                      <tr>
-                        <th className="border border-gray-400 bg-transparent p-1">
-                          Name
-                        </th>
-                        <th className="border border-gray-400 bg-transparent p-1">
-                          Age
-                        </th>
-                        <th className="border border-gray-400 bg-transparent p-1">
-                          Class
-                        </th>
-                        <th className="border border-gray-400 bg-transparent p-1">
-                          School
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[...Array(5)].map((_, i) => (
-                        <tr key={i}>
-                          <td className="border border-gray-400 bg-transparent p-1">
-                            <input type="text" className="w-full" />
-                          </td>
-                          <td className="border border-gray-400 bg-transparent p-1">
-                            <input type="text" className="w-full" />
-                          </td>
-                          <td className="border border-gray-400 bg-transparent p-1">
-                            <input type="text" className="w-full" />
-                          </td>
-                          <td className="border border-gray-400 bg-transparent p-1">
-                            <input type="text" className="w-full" />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                    <option value="">Select Type</option>
+                    <option value="owned">Owned</option>
+                    <option value="rented">Rented</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label>Number of Dependents</label>
+                  <input
+                    type="number"
+                    name="noOfDependents"
+                    value={formData.noOfDependents}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Children Information */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <label>Total Children</label>
+                  <input
+                    type="number"
+                    name="noOfChildren"
+                    value={formData.noOfChildren}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label>Children in School</label>
+                  <input
+                    type="number"
+                    name="noOfChildrenInSchool"
+                    value={formData.noOfChildrenInSchool}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label>Male Children</label>
+                  <input
+                    type="number"
+                    name="noOfChildrenMale"
+                    value={formData.noOfChildrenMale}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label>Female Children</label>
+                  <input
+                    type="number"
+                    name="noOfChildrenFemale"
+                    value={formData.noOfChildrenFemale}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* School Children Details */}
+              <div className="space-y-4">
+                <h4 className="font-semibold">Children's School Details</h4>
+                {formData.nameOfSchoolChildren.map((child, index) => (
+                  <div key={index} className="grid grid-cols-4 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      value={child.name}
+                      onChange={(e) => handleChildrenDetailsChange(index, 'name', e.target.value)}
+                      className="border border-gray-400 bg-transparent p-1"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Class"
+                      value={child.class}
+                      onChange={(e) => handleChildrenDetailsChange(index, 'class', e.target.value)}
+                      className="border border-gray-400 bg-transparent p-1"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Age"
+                      value={child.age}
+                      onChange={(e) => handleChildrenDetailsChange(index, 'age', e.target.value)}
+                      className="border border-gray-400 bg-transparent p-1"
+                    />
+                    <input
+                      type="text"
+                      placeholder="School Name"
+                      value={child.SchoolName}
+                      onChange={(e) => handleChildrenDetailsChange(index, 'SchoolName', e.target.value)}
+                      className="border border-gray-400 bg-transparent p-1"
+                    />
+                  </div>
                 ))}
               </div>
+
+              {/* Additional Information */}
+              <div className="space-y-4">
+                <h4 className="font-semibold">Additional Information</h4>
+                
+                {/* Addictive Drugs */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-4">
+                    <label>Addictive Drugs?</label>
+                    <select
+                      name="addictiveDrugs"
+                      value={formData.addictiveDrugs}
+                      onChange={handleInputChange}
+                      className="border border-gray-400 bg-transparent p-1"
+                      required
+                    >
+                      <option value="">Select</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
+                  {formData.addictiveDrugs === 'yes' && (
+                    <input
+                      type="text"
+                      name="addictiveDrugsDescription"
+                      value={formData.addictiveDrugsDescription}
+                      onChange={handleInputChange}
+                      placeholder="Please provide details"
+                      className="w-full border border-gray-400 bg-transparent p-1"
+                    />
+                  )}
+                </div>
+
+                {/* Disability */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-4">
+                    <label>Any Disability?</label>
+                    <select
+                      name="anyDisability"
+                      value={formData.anyDisability}
+                      onChange={handleInputChange}
+                      className="border border-gray-400 bg-transparent p-1"
+                      required
+                    >
+                      <option value="">Select</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
+                  {formData.anyDisability === 'yes' && (
+                    <input
+                      type="text"
+                      name="anyDisabilityDescription"
+                      value={formData.anyDisabilityDescription}
+                      onChange={handleInputChange}
+                      placeholder="Please provide details"
+                      className="w-full border border-gray-400 bg-transparent p-1"
+                    />
+                  )}
+                </div>
+
+                {/* Political Affiliation */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-4">
+                    <label>Political Affiliation?</label>
+                    <select
+                      name="politicalAffiliation"
+                      value={formData.politicalAffiliation}
+                      onChange={handleInputChange}
+                      className="border border-gray-400 bg-transparent p-1"
+                      required
+                    >
+                      <option value="">Select</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
+                  {formData.politicalAffiliation === 'yes' && (
+                    <input
+                      type="text"
+                      name="politicalAffiliationDescription"
+                      value={formData.politicalAffiliationDescription}
+                      onChange={handleInputChange}
+                      placeholder="Please provide details"
+                      className="w-full border border-gray-400 bg-transparent p-1"
+                    />
+                  )}
+                </div>
+
+                {/* NGO */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-4">
+                    <label>NGO Affiliation?</label>
+                    <select
+                      name="NGO"
+                      value={formData.NGO}
+                      onChange={handleInputChange}
+                      className="border border-gray-400 bg-transparent p-1"
+                      required
+                    >
+                      <option value="">Select</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
+                  {formData.NGO === 'yes' && (
+                    <input
+                      type="text"
+                      name="NGODescription"
+                      value={formData.NGODescription}
+                      onChange={handleInputChange}
+                      placeholder="Please provide details"
+                      className="w-full border border-gray-400 bg-transparent p-1"
+                    />
+                  )}
+                </div>
+              </div>
             </div>
 
-            {/* Additional Questions */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <label>7. Any Family Member is Drugs Addicted</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-1">
-                    <input type="checkbox" /> Yes
-                  </label>
-                  <label className="flex items-center gap-1">
-                    <input type="checkbox" /> No
-                  </label>
-                </div>
-              </div>
-              <div className="pl-4">
-                <label>If yes, please mention full details</label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-
-              <div className="flex items-center gap-4">
-                <label>8. Disease in family</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-1">
-                    <input type="checkbox" /> Yes
-                  </label>
-                  <label className="flex items-center gap-1">
-                    <input type="checkbox" /> No
-                  </label>
-                </div>
-              </div>
-              <div className="pl-4">
-                <label>
-                  If yes, please mention full details and attach the doctor's
-                  reports & documents also.
-                </label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-
-              <div className="flex items-center gap-4">
-                <label>9. Political Affiliation</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-1">
-                    <input type="checkbox" /> Yes
-                  </label>
-                  <label className="flex items-center gap-1">
-                    <input type="checkbox" /> No
-                  </label>
-                </div>
-              </div>
-              <div className="pl-4">
-                <label>
-                  If yes, please mention political party name and your
-                  designation in it.
-                </label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-400 bg-transparent p-1"
-                />
-              </div>
-
-              <div className="flex items-center gap-4">
-                <label>10. Registered with any other NGO/Organization</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-1">
-                    <input type="checkbox" /> Yes
-                  </label>
-                  <label className="flex items-center gap-1">
-                    <input type="checkbox" /> No
-                  </label>
-                </div>
-              </div>
-              <div className="pl-4">
-                <label>
-                  If yes, please mention details and reason of registration.
-                </label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-400 bg-transparent p-1"
-                />
-              </div>
+            {/* Submit Button */}
+            <div className="mt-8 flex justify-end">
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-8 py-2 rounded hover:bg-blue-600 font-semibold"
+              >
+                Submit
+              </button>
             </div>
-          </div>
-
-          {/* Submit Button */}
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="bg-[#004225] text-white px-8 py-2 rounded hover:bg-[#003219]"
-            >
-              Submit
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
+        <Toaster />
       </div>
-     </div>
     </div>
   );
 };
