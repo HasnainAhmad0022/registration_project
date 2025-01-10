@@ -5,7 +5,7 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const userData = JSON.parse(sessionStorage.getItem("userData"));
-//   console.log(userData);
+  // console.log(userData);
 
   const navItems = [
     {
@@ -80,8 +80,8 @@ const Navbar = () => {
                 A
               </div>
               <div className="text-sm">
-                <p className="font-medium text-gray-700">Admin User</p>
-                <p className="text-gray-500">admin@example.com</p>
+                <p className="font-medium text-gray-700">{userData?.data?.user?.username}</p>
+                <p className="text-gray-500">{userData?.data?.user?.email}</p>
               </div>
             </div>
 
