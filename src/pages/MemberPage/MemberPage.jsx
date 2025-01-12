@@ -155,6 +155,50 @@ const MemberPage = () => {
             />
           </div>
 
+          {/* Header Banner */}
+          <div className="rounded-lg p-1 bg-white mb-10">
+            <div className="relative">
+              {/* Green banner with curved edges */}
+              <div className="bg-[#004F25] text-white relative">
+                {/* Light green accent on edges */}
+                <div className="absolute left-0 top-0 bottom-0 w-8 bg-[#90CE5F] rounded-r-lg"></div>
+                <div className="absolute right-0 top-0 bottom-0 w-8 bg-[#90CE5F] rounded-l-lg"></div>
+
+                <div className="flex items-center justify-between px-8 py-0">
+                  {/* Left logo */}
+                  <div className="w-32 h-24 bg-white p-2 rounded-lg">
+                    <img
+                      src={backgroundlogo}
+                      alt="Help System Logo"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+
+                  {/* Center text */}
+                  <div className="text-center space-y-1">
+                    <h1 className="text-4xl font-extrabold">HELP SYSTEM</h1>
+                    <h2 className="text-2xl font-bold">KHYBER PUKHTUNKHWA</h2>
+                    <p className="text-xl font-semibold">
+                      Voluntary Social Welfare Organization
+                    </p>
+                    <p className="text-xl font-semibold">
+                      Health Education Livelihood & Peace for All
+                    </p>
+                  </div>
+
+                  {/* Right QR code */}
+                  <div className="w-32 h-24 bg-white p-2 rounded-lg">
+                    <img
+                      src={backgroundlogo}
+                      alt="QR Code"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* 1. Personal Details */}
             <div className="space-y-4">
