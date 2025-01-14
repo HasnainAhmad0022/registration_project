@@ -14,14 +14,8 @@ const StudentForm = () => {
   const motherCnicRefs = Array(13).fill(0).map(() => useRef(null));
   const guardianCnicRefs = Array(13).fill(0).map(() => useRef(null));
 
-  // Create refs for signatures
+  // Create ref for guardian signature
   const guardianSignatureRef = useRef();
-  const applicantSignaturePerCnicRef = useRef();
-  const applicantSignatureCurrentRef = useRef();
-  const fswSignatureRef = useRef();
-  const fsSignatureRef = useRef();
-  const pdSignatureRef = useRef();
-  const chairmanSignatureRef = useRef();
 
   const initialFormState = {
     childName: "",
@@ -46,17 +40,15 @@ const StudentForm = () => {
     relationContact: "",
     guardianAddress: "",
     image: null,
-    childThumbPrint: null,
-    productIds: ["6774f473c376018514985ee2"],
-    birthMonth: "",
-    birthDay: "",
-    birthYear: "",
-    totalAge: ""
+    cnicFrontPic: null,
+    cnicBackPic: null,
+    productIds: ["6774f473c376018514985ee2"]
   };
 
   const [formData, setFormData] = useState(initialFormState);
   const [photoPreview, setPhotoPreview] = useState(null);
-  const [thumbPreview, setThumbPreview] = useState(null);
+  const [cnicFrontPreview, setCnicFrontPreview] = useState(null);
+  const [cnicBackPreview, setCnicBackPreview] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -80,19 +72,16 @@ const StudentForm = () => {
     allCnicInputs[index] = value;
     const cnicString = `${allCnicInputs.slice(0,5).join('')}-${allCnicInputs.slice(5,12).join('')}-${allCnicInputs[12] || ''}`;
     
-    switch(type) {
-      case 'father':
-        setFormData(prev => ({ ...prev, fatherCnic: cnicString }));
-        break;
-      case 'mother':
-        setFormData(prev => ({ ...prev, motherCnic: cnicString }));
-        break;
-      case 'guardian':
-        setFormData(prev => ({ ...prev, guardianCnic: cnicString }));
-        break;
-      default:
-        break;
-    }
+    const cnicMap = {
+      'father': 'fatherCnic',
+      'mother': 'motherCnic',
+      'guardian': 'guardianCnic'
+    };
+    
+    setFormData(prev => ({ 
+      ...prev, 
+      [cnicMap[type]]: cnicString 
+    }));
   };
 
   const handleKeyDown = (e, refs, index) => {
@@ -106,10 +95,18 @@ const StudentForm = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        if (field === 'image') {
-          setPhotoPreview(reader.result);
-        } else if (field === 'childThumbPrint') {
-          setThumbPreview(reader.result);
+        switch(field) {
+          case 'image':
+            setPhotoPreview(reader.result);
+            break;
+          case 'cnicFrontPic':
+            setCnicFrontPreview(reader.result);
+            break;
+          case 'cnicBackPic':
+            setCnicBackPreview(reader.result);
+            break;
+          default:
+            break;
         }
       };
       reader.readAsDataURL(file);
@@ -120,9 +117,9 @@ const StudentForm = () => {
     }
   };
 
-  const clearSignature = (ref) => {
-    if (ref.current) {
-      ref.current.clear();
+  const clearSignature = () => {
+    if (guardianSignatureRef.current) {
+      guardianSignatureRef.current.clear();
     }
   };
 
@@ -131,40 +128,24 @@ const StudentForm = () => {
     try {
       const submitData = new FormData();
       
-      // Append all text fields
+      // Append all form fields
       Object.entries(formData).forEach(([key, value]) => {
-        if (key === 'dataOfBirth') {
-          // Ensure date is sent as a single string
-          submitData.append('dataOfBirth', value.toString());
-        } else if (typeof value === 'string' || Array.isArray(value)) {
+        if (key !== 'image' && key !== 'cnicFrontPic' && key !== 'cnicBackPic') {
           submitData.append(key, value);
         }
       });
       
       // Append files
       if (formData.image) submitData.append('image', formData.image);
-      if (formData.childThumbPrint) submitData.append('childThumbPrint', formData.childThumbPrint);
+      if (formData.cnicFrontPic) submitData.append('cnicFrontPic', formData.cnicFrontPic);
+      if (formData.cnicBackPic) submitData.append('cnicBackPic', formData.cnicBackPic);
 
-      // Handle signature pads
+      // Handle guardian signature
       if (guardianSignatureRef.current && !guardianSignatureRef.current.isEmpty()) {
         const signatureDataURL = guardianSignatureRef.current.toDataURL();
         const response = await fetch(signatureDataURL);
         const blob = await response.blob();
         submitData.append('guardianSignature', new File([blob], 'guardianSignature.png', { type: 'image/png' }));
-      }
-
-      if (applicantSignaturePerCnicRef.current && !applicantSignaturePerCnicRef.current.isEmpty()) {
-        const signatureDataURL = applicantSignaturePerCnicRef.current.toDataURL();
-        const response = await fetch(signatureDataURL);
-        const blob = await response.blob();
-        submitData.append('applicationSignaturePerCnic', new File([blob], 'applicationSignaturePerCnic.png', { type: 'image/png' }));
-      }
-
-      if (applicantSignatureCurrentRef.current && !applicantSignatureCurrentRef.current.isEmpty()) {
-        const signatureDataURL = applicantSignatureCurrentRef.current.toDataURL();
-        const response = await fetch(signatureDataURL);
-        const blob = await response.blob();
-        submitData.append('applicationSignatureCurrent', new File([blob], 'applicationSignatureCurrent.png', { type: 'image/png' }));
       }
 
       // Add userId
@@ -173,13 +154,12 @@ const StudentForm = () => {
       const response = await userRequest.post("/school/addnewschool", submitData);
       toast.success(response?.data?.message || "Student added successfully");
 
-      // Clear form and signatures
+      // Reset form
       setFormData(initialFormState);
       setPhotoPreview(null);
-      setThumbPreview(null);
-      clearSignature(guardianSignatureRef);
-      clearSignature(applicantSignaturePerCnicRef);
-      clearSignature(applicantSignatureCurrentRef);
+      setCnicFrontPreview(null);
+      setCnicBackPreview(null);
+      clearSignature();
 
       // Navigate after success
       setTimeout(() => {
@@ -195,570 +175,433 @@ const StudentForm = () => {
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
-      <div className="max-w-6xl mx-auto p-6 bg-white rounded-lg mt-3">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* 3. Orphans/Child Labor School Admission Form */}
-          <div className="space-y-4">
-            <div className="bg-green-800 text-white px-2 py-1">
-              <h4>3. Orphans/Child Labor School Admission Form</h4>
-            </div>
+      <div className="max-w-6xl mx-auto p-2 md:p-6 bg-white rounded-lg mt-3">
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+          {/* Form Header */}
+          <div className="bg-green-800 text-white px-2 py-1">
+            <h4 className="text-sm md:text-base">3. Orphans/Child Labor School Admission Form</h4>
+          </div>
 
-            <div className="grid grid-cols-[1fr_200px] gap-8 p-4">
-              {/* Left Column - Form Fields */}
-              <div className="space-y-4">
-                {/* Basic Information */}
-                <div className="space-y-3">
-                  <div className="flex gap-2 items-center">
-                    <label className="min-w-[100px]">Child Name</label>
-                    <input
-                      type="text"
-                      name="childName"
-                      value={formData.childName}
-                      onChange={handleInputChange}
-                      className="border border-gray-400 flex-1 p-1"
-                      required
-                    />
-                  </div>
+          {/* Main Form Content */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4 md:gap-8 p-2 md:p-4">
+            {/* Left Column - Form Fields */}
+            <div className="space-y-4">
+              {/* Basic Information Fields */}
+              <div className="space-y-3">
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[100px]">Child Name</label>
+                  <input
+                    type="text"
+                    name="childName"
+                    value={formData.childName}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 w-full md:flex-1 p-1"
+                    required
+                  />
+                </div>
 
-                  <div className="flex gap-2 items-center">
-                    <label className="min-w-[100px]">Father Name</label>
-                    <input
-                      type="text"
-                      name="fatherName"
-                      value={formData.fatherName}
-                      onChange={handleInputChange}
-                      className="border border-gray-400 flex-1 p-1"
-                      required
-                    />
-                  </div>
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[100px]">Father Name</label>
+                  <input
+                    type="text"
+                    name="fatherName"
+                    value={formData.fatherName}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 w-full md:flex-1 p-1"
+                    required
+                  />
+                </div>
 
-                  <div className="flex gap-2 items-center">
-                    <label className="min-w-[100px]">CNIC</label>
-                    <div className="flex gap-1">
-                      {[...Array(13)].map((_, i) => (
-                        <React.Fragment key={`father-cnic-${i}`}>
-                          <input
-                            type="text"
-                            className="w-8 h-8 border border-gray-400 text-center"
-                            maxLength="1"
-                            ref={fatherCnicRefs[i]}
-                            onChange={(e) => handleCnicInput(e, i, fatherCnicRefs, 'father')}
-                            onKeyDown={(e) => handleKeyDown(e, fatherCnicRefs, i)}
-                          />
-                          {(i === 4 || i === 11) && <span>-</span>}
-                        </React.Fragment>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 items-center">
-                    <label className="min-w-[100px]">Mother Name</label>
-                    <input
-                      type="text"
-                      name="motherName"
-                      value={formData.motherName}
-                      onChange={handleInputChange}
-                      className="border border-gray-400 flex-1 p-1"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex gap-2 items-center">
-                    <label className="min-w-[100px]">Mother CNIC</label>
-                    <div className="flex gap-1">
-                      {[...Array(13)].map((_, i) => (
-                        <React.Fragment key={`mother-cnic-${i}`}>
-                          <input
-                            type="text"
-                            className="w-8 h-8 border border-gray-400 text-center"
-                            maxLength="1"
-                            ref={motherCnicRefs[i]}
-                            onChange={(e) => handleCnicInput(e, i, motherCnicRefs, 'mother')}
-                            onKeyDown={(e) => handleKeyDown(e, motherCnicRefs, i)}
-                          />
-                          {(i === 4 || i === 11) && <span>-</span>}
-                        </React.Fragment>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 items-center">
-                    <label className="min-w-[100px]">Date of Birth</label>
-                    <input
-                      type="date"
-                      name="dataOfBirth"
-                      value={formData.dataOfBirth}
-                      onChange={handleInputChange}
-                      className="border border-gray-400 p-1"
-                      required
-                    />
-                  </div>
-
-                  <div className="flex gap-2 items-center">
-                    <label className="min-w-[100px]">Total Age</label>
-                    <input
-                      type="text"
-                      name="totalAge"
-                      value={formData.totalAge}
-                      onChange={handleInputChange}
-                      className="border border-gray-400 w-20 p-1"
-                      required
-                    />
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[100px]">CNIC</label>
+                  <div className="flex gap-1 overflow-x-auto pb-2 md:pb-0">
+                    {[...Array(13)].map((_, i) => (
+                      <React.Fragment key={`father-cnic-${i}`}>
+                        <input
+                          type="text"
+                          className="w-8 h-8 border border-gray-400 text-center flex-shrink-0"
+                          maxLength="1"
+                          ref={fatherCnicRefs[i]}
+                          onChange={(e) => handleCnicInput(e, i, fatherCnicRefs, 'father')}
+                          onKeyDown={(e) => handleKeyDown(e, fatherCnicRefs, i)}
+                        />
+                        {(i === 4 || i === 11) && <span className="flex-shrink-0">-</span>}
+                      </React.Fragment>
+                    ))}
                   </div>
                 </div>
 
-                {/* Additional Information */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex gap-2 items-center">
-                    <label>Blood Group</label>
-                    <input
-                      type="text"
-                      name="bloodGroup"
-                      value={formData.bloodGroup}
-                      onChange={handleInputChange}
-                      className="border border-gray-400 w-20 p-1"
-                      required
-                    />
-                  </div>
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[100px]">Mother Name</label>
+                  <input
+                    type="text"
+                    name="motherName"
+                    value={formData.motherName}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 w-full md:flex-1 p-1"
+                    required
+                  />
+                </div>
 
-                  <div className="flex gap-2 items-center">
-                    <label>Position</label>
-                    <select
-                      name="position"
-                      value={formData.position}
-                      onChange={handleInputChange}
-                      className="border border-gray-400 p-1"
-                      required
-                    >
-                      <option value="orphan">Orphan</option>
-                      <option value="poor">Poor</option>
-                      <option value="other">Other</option>
-                    </select>
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[100px]">Mother CNIC</label>
+                  <div className="flex gap-1 overflow-x-auto pb-2 md:pb-0">
+                    {[...Array(13)].map((_, i) => (
+                      <React.Fragment key={`mother-cnic-${i}`}>
+                        <input
+                          type="text"
+                          className="w-8 h-8 border border-gray-400 text-center flex-shrink-0"
+                          maxLength="1"
+                          ref={motherCnicRefs[i]}
+                          onChange={(e) => handleCnicInput(e, i, motherCnicRefs, 'mother')}
+                          onKeyDown={(e) => handleKeyDown(e, motherCnicRefs, i)}
+                        />
+                        {(i === 4 || i === 11) && <span className="flex-shrink-0">-</span>}
+                      </React.Fragment>
+                    ))}
                   </div>
                 </div>
 
-                {/* Child Disability */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-4">
-                    <label>Child Disability</label>
-                    <select
-                      name="childDisable"
-                      value={formData.childDisable}
-                      onChange={handleInputChange}
-                      className="border border-gray-400 p-1"
-                      required
-                    >
-                      <option value="">Select</option>
-                      <option value="yes">Yes</option>
-                      <option value="no">No</option>
-                    </select>
-                  </div>
-                  {formData.childDisable === 'yes' && (
-                    <input
-                      type="text"
-                      name="childDisableDesc"
-                      value={formData.childDisableDesc}
-                      onChange={handleInputChange}
-                      placeholder="Please provide details"
-                      className="w-full border border-gray-400 p-1"
-                    />
-                  )}
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[100px]">Date of Birth</label>
+                  <input
+                    type="date"
+                    name="dataOfBirth"
+                    value={formData.dataOfBirth}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 w-full md:flex-1 p-1"
+                    required
+                  />
                 </div>
 
-                {/* Previous School */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-4">
-                    <label>Previous School</label>
-                    <select
-                      name="previewsSchool"
-                      value={formData.previewsSchool}
-                      onChange={handleInputChange}
-                      className="border border-gray-400 p-1"
-                      required
-                    >
-                      <option value="">Select</option>
-                      <option value="yes">Yes</option>
-                      <option value="no">No</option>
-                    </select>
-                  </div>
-                  {formData.previewsSchool === 'yes' && (
-                    <input
-                      type="text"
-                      name="previewsSchoolDesc"
-                      value={formData.previewsSchoolDesc}
-                      onChange={handleInputChange}
-                      placeholder="Please provide school details"
-                      className="w-full border border-gray-400 p-1"
-                    />
-                  )}
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[100px]">Total Age</label>
+                  <input
+                    type="text"
+                    name="totalAge"
+                    value={formData.totalAge}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 w-full md:flex-1 p-1"
+                    required
+                  />
                 </div>
               </div>
 
-              {/* Right Column - Photo Upload */}
-              <div>
-                <div>
-                  <div className="border-2 border-dashed border-gray-400 h-48 relative mb-2">
-                    {photoPreview ? (
-                      <img 
-                        src={photoPreview} 
-                        alt="Child" 
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-full">
-                        <p className="text-[#B91C1C] text-sm text-center">
-                          Paste one recent picture of the
-                        </p>
-                        <p className="text-[#B91C1C] text-sm text-center">
-                          child
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex justify-center">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e, 'image')}
-                      className="hidden"
-                      id="photoUpload"
-                    />
-                    <label 
-                      htmlFor="photoUpload"
-                      className="bg-[#3B82F6] text-white px-6 py-1.5 rounded text-sm cursor-pointer"
-                    >
-                      Upload Photo
-                    </label>
-                  </div>
+              {/* School Information Fields */}
+              <div className="space-y-3">
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[150px]">School Admitted In</label>
+                  <input
+                    type="text"
+                    name="schoolAdmittedIn"
+                    value={formData.schoolAdmittedIn}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 w-full md:flex-1 p-1"
+                    required
+                  />
                 </div>
-              </div>
-            </div>
 
-            {/* School Details */}
-            <div className="grid grid-cols-2 gap-4 p-4">
-              <div className="flex gap-2 items-center">
-                <label>School Admitted in</label>
-                <input
-                  type="text"
-                  name="schoolAdmittedIn"
-                  value={formData.schoolAdmittedIn}
-                  onChange={handleInputChange}
-                  className="border border-gray-400 flex-1 p-1"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex gap-2 items-center">
-                  <label>Class</label>
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[150px]">School Class</label>
                   <input
                     type="text"
                     name="schoolclass"
                     value={formData.schoolclass}
                     onChange={handleInputChange}
-                    className="border border-gray-400 w-20 p-1"
+                    className="border border-gray-400 w-full md:flex-1 p-1"
                     required
                   />
                 </div>
-                <div className="flex gap-2 items-center">
-                  <label>Date of Admission</label>
+
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[150px]">Date of Admission</label>
                   <input
                     type="date"
                     name="DateOfAdmission"
                     value={formData.DateOfAdmission}
                     onChange={handleInputChange}
-                    className="border border-gray-400 flex-1 p-1"
+                    className="border border-gray-400 w-full md:flex-1 p-1"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Additional Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label>Blood Group</label>
+                  <input
+                    type="text"
+                    name="bloodGroup"
+                    value={formData.bloodGroup}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 w-full md:flex-1 p-1"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label>Position</label>
+                  <select
+                    name="position"
+                    value={formData.position}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 w-full md:flex-1 p-1"
+                    required
+                  >
+                    <option value="orphan">Orphan</option>
+                    <option value="poor">Poor</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Child Disability */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-4">
+                  <label>Child Disability</label>
+                  <select
+                    name="childDisable"
+                    value={formData.childDisable}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 p-1"
+                    required
+                  >
+                    <option value="">Select</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+                {formData.childDisable === 'yes' && (
+                  <input
+                    type="text"
+                    name="childDisableDesc"
+                    value={formData.childDisableDesc}
+                    onChange={handleInputChange}
+                    placeholder="Please provide details"
+                    className="w-full border border-gray-400 p-1"
+                  />
+                )}
+              </div>
+
+              {/* Previous School */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-4">
+                  <label>Previous School</label>
+                  <select
+                    name="previewsSchool"
+                    value={formData.previewsSchool}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 p-1"
+                    required
+                  >
+                    <option value="">Select</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </div>
+                {formData.previewsSchool === 'yes' && (
+                  <input
+                    type="text"
+                    name="previewsSchoolDesc"
+                    value={formData.previewsSchoolDesc}
+                    onChange={handleInputChange}
+                    placeholder="Please provide school details"
+                    className="w-full border border-gray-400 p-1"
+                  />
+                )}
+              </div>
+
+              {/* Guardian Information Fields */}
+              <div className="space-y-3">
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[150px]">Guardian Name</label>
+                  <input
+                    type="text"
+                    name="guardianName"
+                    value={formData.guardianName}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 w-full md:flex-1 p-1"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[150px]">Guardian CNIC</label>
+                  <div className="flex gap-1 overflow-x-auto pb-2 md:pb-0">
+                    {[...Array(13)].map((_, i) => (
+                      <React.Fragment key={`guardian-cnic-${i}`}>
+                        <input
+                          type="text"
+                          className="w-8 h-8 border border-gray-400 text-center flex-shrink-0"
+                          maxLength="1"
+                          ref={guardianCnicRefs[i]}
+                          onChange={(e) => handleCnicInput(e, i, guardianCnicRefs, 'guardian')}
+                          onKeyDown={(e) => handleKeyDown(e, guardianCnicRefs, i)}
+                        />
+                        {(i === 4 || i === 11) && <span className="flex-shrink-0">-</span>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[150px]">Relation with Child</label>
+                  <input
+                    type="text"
+                    name="relationWithChild"
+                    value={formData.relationWithChild}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 w-full md:flex-1 p-1"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[150px]">Contact Number</label>
+                  <input
+                    type="text"
+                    name="relationContact"
+                    value={formData.relationContact}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 w-full md:flex-1 p-1"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[150px]">Guardian Address</label>
+                  <input
+                    type="text"
+                    name="guardianAddress"
+                    value={formData.guardianAddress}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 w-full md:flex-1 p-1"
                     required
                   />
                 </div>
               </div>
             </div>
 
-            {/* Guardian Details */}
-            <div className="grid grid-cols-2 gap-4 p-4">
-              <div className="flex gap-2 items-center">
-                <label>Guardian Name</label>
-                <input
-                  type="text"
-                  name="guardianName"
-                  value={formData.guardianName}
-                  onChange={handleInputChange}
-                  className="border border-gray-400 flex-1 p-1"
-                  required
-                />
-              </div>
-              <div className="flex gap-2 items-center">
-                <label>CNIC</label>
-                <div className="flex gap-1">
-                  {[...Array(13)].map((_, i) => (
-                    <React.Fragment key={`guardian-cnic-${i}`}>
-                      <input
-                        type="text"
-                        className="w-8 h-8 border border-gray-400 text-center"
-                        maxLength="1"
-                        ref={guardianCnicRefs[i]}
-                        onChange={(e) => handleCnicInput(e, i, guardianCnicRefs, 'guardian')}
-                        onKeyDown={(e) => handleKeyDown(e, guardianCnicRefs, i)}
-                      />
-                      {(i === 4 || i === 11) && <span>-</span>}
-                    </React.Fragment>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 p-4">
-              <div className="flex gap-2 items-center">
-                <label>Relation with Child</label>
-                <input
-                  type="text"
-                  name="relationWithChild"
-                  value={formData.relationWithChild}
-                  onChange={handleInputChange}
-                  className="border border-gray-400 flex-1 p-1"
-                  required
-                />
-              </div>
-              <div className="flex gap-2 items-center">
-                <label>Contact</label>
-                <input
-                  type="text"
-                  name="relationContact"
-                  value={formData.relationContact}
-                  onChange={handleInputChange}
-                  className="border border-gray-400 flex-1 p-1"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Guardian Address */}
-            <div className="px-4 pb-4">
-              <div className="flex gap-2 items-center">
-                <label>Guardian Address</label>
-                <input
-                  type="text"
-                  name="guardianAddress"
-                  value={formData.guardianAddress}
-                  onChange={handleInputChange}
-                  className="border border-gray-400 flex-1 p-1"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Signatures Section */}
-            <div className="grid grid-cols-2 gap-8 p-4">
+            {/* Right Column - Photo Upload */}
+            <div className="space-y-4">
               <div>
-                <label>Child Thumb Expression</label>
-                <div className="border-2 border-dashed border-gray-400 h-24 mt-2 relative">
-                  {thumbPreview ? (
-                    <img 
-                      src={thumbPreview} 
-                      alt="Thumb Expression" 
-                      className="w-full h-full object-contain"
-                    />
+                <div className="border-2 border-dashed border-gray-400 h-48 relative mb-2">
+                  {photoPreview ? (
+                    <img src={photoPreview} alt="Child" className="w-full h-full object-contain"/>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleFileUpload(e, 'childThumbPrint')}
-                        className="absolute inset-0 opacity-0 cursor-pointer"
-                      />
-                      <button
-                        type="button"
-                        className="bg-blue-500 text-white px-4 py-2 rounded text-sm"
-                      >
-                        Upload Thumb Expression
-                      </button>
+                      <p className="text-[#B91C1C] text-sm text-center px-2">
+                        Paste one recent picture of the child
+                      </p>
                     </div>
                   )}
                 </div>
-              </div>
-              <div>
-                <label>Guardian Signature</label>
-                <div className="border-2 border-dashed border-gray-400 h-24">
-                  <SignaturePad
-                    ref={guardianSignatureRef}
-                    canvasProps={{
-                      className: "w-full h-full"
-                    }}
+                <div className="flex justify-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, 'image')}
+                    className="hidden"
+                    id="photoUpload"
                   />
+                  <label 
+                    htmlFor="photoUpload"
+                    className="bg-[#3B82F6] text-white px-6 py-1.5 rounded text-sm cursor-pointer"
+                  >
+                    Upload Photo
+                  </label>
                 </div>
-                <button
-                  type="button"
-                  className="text-sm text-blue-500"
-                  onClick={() => clearSignature(guardianSignatureRef)}
+              </div>
+            </div>
+          </div>
+
+          {/* CNIC Images Upload Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 p-2 md:p-4">
+            {/* Front CNIC */}
+            <div>
+              <label className="block mb-2">CNIC Front Image</label>
+              <div className="border-2 border-dashed border-gray-400 h-48 relative mb-2">
+                {cnicFrontPreview ? (
+                  <img src={cnicFrontPreview} alt="CNIC Front" className="w-full h-full object-contain"/>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500">Upload CNIC Front</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileUpload(e, 'cnicFrontPic')}
+                  className="hidden"
+                  id="cnicFrontUpload"
+                />
+                <label 
+                  htmlFor="cnicFrontUpload"
+                  className="bg-[#3B82F6] text-white px-6 py-1.5 rounded text-sm cursor-pointer"
                 >
-                  Clear
-                </button>
+                  Upload CNIC Front
+                </label>
+              </div>
+            </div>
+
+            {/* Back CNIC */}
+            <div>
+              <label className="block mb-2">CNIC Back Image</label>
+              <div className="border-2 border-dashed border-gray-400 h-48 relative mb-2">
+                {cnicBackPreview ? (
+                  <img src={cnicBackPreview} alt="CNIC Back" className="w-full h-full object-contain"/>
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-gray-500">Upload CNIC Back</p>
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileUpload(e, 'cnicBackPic')}
+                  className="hidden"
+                  id="cnicBackUpload"
+                />
+                <label 
+                  htmlFor="cnicBackUpload"
+                  className="bg-[#3B82F6] text-white px-6 py-1.5 rounded text-sm cursor-pointer"
+                >
+                  Upload CNIC Back
+                </label>
               </div>
             </div>
           </div>
 
-          {/* 4. Declaration */}
-          <div className="space-y-4 mt-8">
-            <div className="bg-green-800 text-white px-2 py-1">
-              <h4>4. Declaration</h4>
+          {/* Guardian Signature */}
+          <div className="p-2 md:p-4">
+            <label className="block mb-2">Guardian Signature</label>
+            <div className="w-full md:w-1/2 border-2 border-dashed border-gray-400 h-24">
+              <SignaturePad
+                ref={guardianSignatureRef}
+                canvasProps={{
+                  className: "w-full h-full"
+                }}
+              />
             </div>
-            
-            <div className="p-4">
-              <p className="text-sm mb-8">
-                It is acknowledged that the details/informations in this membership/application form are correct, complete and 
-                accurate to the best of knowledge and any information has not been withheld pretending to the save.
-              </p>
-              
-              <div className="grid grid-cols-2 gap-8">
-                <div>
-                  <div className="border-2 border-dashed border-gray-400 h-24">
-                    <SignaturePad
-                      ref={applicantSignaturePerCnicRef}
-                      canvasProps={{
-                        className: "w-full h-full"
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="text-sm text-blue-500"
-                    onClick={() => clearSignature(applicantSignaturePerCnicRef)}
-                  >
-                    Clear
-                  </button>
-                  <p className="text-center mt-2">Applicant Signature (as per CNIC)</p>
-                </div>
-                <div>
-                  <div className="border-2 border-dashed border-gray-400 h-24">
-                    <SignaturePad
-                      ref={applicantSignatureCurrentRef}
-                      canvasProps={{
-                        className: "w-full h-full"
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="text-sm text-blue-500"
-                    onClick={() => clearSignature(applicantSignatureCurrentRef)}
-                  >
-                    Clear
-                  </button>
-                  <p className="text-center mt-2">Applicant Signature (Current)</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 5. Official Use */}
-          <div className="space-y-4 mt-8">
-            <div className="bg-green-800 text-white px-2 py-1">
-              <h4>5. Official Use</h4>
-            </div>
-            
-            <div className="p-4">
-              <div className="grid grid-cols-2 gap-8">
-                <div>
-                  <div className="border-2 border-dashed border-gray-400 h-24">
-                    <SignaturePad
-                      ref={fswSignatureRef}
-                      canvasProps={{
-                        className: "w-full h-full"
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="text-sm text-blue-500"
-                    onClick={() => clearSignature(fswSignatureRef)}
-                  >
-                    Clear
-                  </button>
-                  <p className="font-semibold mt-2">Signature</p>
-                  <p>Field Survey Worker (FSW)</p>
-                  <p>HELP System Khyber Pukhtunkhwa</p>
-                </div>
-                <div>
-                  <div className="border-2 border-dashed border-gray-400 h-24">
-                    <SignaturePad
-                      ref={fsSignatureRef}
-                      canvasProps={{
-                        className: "w-full h-full"
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="text-sm text-blue-500"
-                    onClick={() => clearSignature(fsSignatureRef)}
-                  >
-                    Clear
-                  </button>
-                  <p className="font-semibold mt-2">Signature</p>
-                  <p>Field Supervisor (FS)</p>
-                  <p>HELP System Khyber Pukhtunkhwa</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-8 mt-8">
-                <div>
-                  <div className="border-2 border-dashed border-gray-400 h-24">
-                    <SignaturePad
-                      ref={pdSignatureRef}
-                      canvasProps={{
-                        className: "w-full h-full"
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="text-sm text-blue-500"
-                    onClick={() => clearSignature(pdSignatureRef)}
-                  >
-                    Clear
-                  </button>
-                  <p className="font-semibold mt-2">Signature</p>
-                  <p>GS/Project Director (PD)</p>
-                  <p>HELP System Khyber Pukhtunkhwa</p>
-                </div>
-                <div>
-                  <div className="border-2 border-dashed border-gray-400 h-24">
-                    <SignaturePad
-                      ref={chairmanSignatureRef}
-                      canvasProps={{
-                        className: "w-full h-full"
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="text-sm text-blue-500"
-                    onClick={() => clearSignature(chairmanSignatureRef)}
-                  >
-                    Clear
-                  </button>
-                  <p className="font-semibold mt-2">Signature</p>
-                  <p>Chairman</p>
-                  <p>HELP System Khyber Pukhtunkhwa</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <label>Date</label>
-                    <input
-                      type="date"
-                      name="chairmanDate"
-                      value={formData.chairmanDate}
-                      onChange={handleInputChange}
-                      className="border border-gray-400 w-32 p-1"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <button
+              type="button"
+              className="text-sm text-blue-500 mt-2"
+              onClick={clearSignature}
+            >
+              Clear
+            </button>
           </div>
 
           {/* Submit Button */}
-          <div className="mt-8 flex justify-end">
+          <div className="mt-8 flex justify-center md:justify-end p-2 md:p-4">
             <button
               type="submit"
-              className="bg-blue-500 text-white px-8 py-2 rounded hover:bg-blue-600 font-semibold"
+              className="bg-blue-500 text-white px-8 py-2 rounded hover:bg-blue-600 font-semibold w-full md:w-auto"
             >
               Submit
             </button>

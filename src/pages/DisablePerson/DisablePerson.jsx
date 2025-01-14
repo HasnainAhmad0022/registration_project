@@ -19,10 +19,15 @@ const DisablePerson = () => {
     // console.log(userData);
     const navigate = useNavigate();
 
+  const [cnicFrontFile, setCnicFrontFile] = useState(null);
+  const [cnicBackFile, setCnicBackFile] = useState(null);
+  const [cnicFrontPreview, setCnicFrontPreview] = useState(null);
+  const [cnicBackPreview, setCnicBackPreview] = useState(null);
+
   const initialFormState = {
     submittionDate: '',
     registrationNo: '',
-    name: '',
+    childName: '',
     fatherName: '',
     status: '',
     spouse: '',
@@ -105,20 +110,41 @@ const DisablePerson = () => {
     applicantSignatureRef.current.clear();
   };
 
-  // Update handleSubmit to only handle the applicant signature
+  const handleFileUpload = (e, field) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        switch(field) {
+          case 'cnicFrontPic':
+            setCnicFrontPreview(reader.result);
+            setCnicFrontFile(file);
+            break;
+          case 'cnicBackPic':
+            setCnicBackPreview(reader.result);
+            setCnicBackFile(file);
+            break;
+          default:
+            break;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Update handleSubmit
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const submitData = new FormData();
+      
       // Append all form data
       Object.entries(formData).forEach(([key, value]) => {
         submitData.append(key, value);
       });
-      // Handle only applicant signature
-      if (
-        applicantSignatureRef.current &&
-        !applicantSignatureRef.current.isEmpty()
-      ) {
+
+      // Handle applicant signature
+      if (applicantSignatureRef.current && !applicantSignatureRef.current.isEmpty()) {
         const signatureDataURL = applicantSignatureRef.current.toDataURL();
         const response = await fetch(signatureDataURL);
         const blob = await response.blob();
@@ -126,6 +152,14 @@ const DisablePerson = () => {
           type: "image/png",
         });
         submitData.append("signatureApplicant", signatureFile);
+      }
+
+      // Append CNIC images
+      if (cnicFrontFile) {
+        submitData.append("cnicFrontPic", cnicFrontFile);
+      }
+      if (cnicBackFile) {
+        submitData.append("cnicBackPic", cnicBackFile);
       }
 
       // Add userId
@@ -161,8 +195,8 @@ const DisablePerson = () => {
 
       // Navigate to home page after a short delay
       setTimeout(() => {
-        navigate('/');
-      }, 2000); // 1.5 second delay to show the success message
+        navigate('/home-page');
+      }, 2000);
 
     } catch (err) {
       console.error("Error:", err);
@@ -175,10 +209,10 @@ const DisablePerson = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 p-2 md:p-4">
       <Navbar />
-      <div className="p-3 rounded-lg bg-gray-100">
-        <div className="max-w-6xl mx-auto p-6 bg-white relative border border-gray-300">
+      <div className="rounded-lg bg-gray-100">
+        <div className="max-w-6xl mx-auto p-2 md:p-6 bg-white relative border border-gray-300">
           {/* Watermark */}
           <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
             <img
@@ -254,12 +288,12 @@ const DisablePerson = () => {
 
           <form className="space-y-4 relative z-10" onSubmit={handleSubmit}>
             {/* Date and Registration */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[10px]">
                   Date
                 </label>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 w-full md:w-auto overflow-x-auto">
                   {[...Array(8)].map((_, i) => (
                     <React.Fragment key={`date-${i}`}>
                       <input
@@ -275,8 +309,8 @@ const DisablePerson = () => {
                   ))}
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <label className="block text-sm whitespace-nowrap min-w-[150px]">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
+                <label className="block text-sm whitespace-nowrap">
                   Registration No DO/SW/CHD
                 </label>
                 <input
@@ -290,8 +324,8 @@ const DisablePerson = () => {
             </div>
 
             {/* Name and Father Name */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Name
                 </label>
@@ -303,7 +337,7 @@ const DisablePerson = () => {
                   name="childName"
                 />
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Father Name
                 </label>
@@ -318,8 +352,8 @@ const DisablePerson = () => {
             </div>
 
             {/* Marital Status and Spouse */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Marital Status
                 </label>
@@ -348,7 +382,7 @@ const DisablePerson = () => {
                   </label>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Spouse
                 </label>
@@ -368,48 +402,46 @@ const DisablePerson = () => {
             </div>
 
             {/* CNIC and Date of Birth */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-4">
-                <label className="block text-sm whitespace-nowrap min-w-[20px]">
-                  CNIC
-                </label>
-                <div className="flex items-center gap-1">
-                  {[...Array(13)].map((_, i) => (
-                    <React.Fragment key={`cnic-${i}`}>
-                      <input
-                        type="text"
-                        className="w-8 h-8 border border-gray-400 text-center bg-transparent"
-                        maxLength="1"
-                        ref={cnicRefs[i]}
-                        onChange={(e) => handleCnicInput(e, i)}
-                        onKeyDown={(e) => handleKeyDown(e, cnicRefs, i)}
-                      />
-                      {(i === 4 || i === 11) && <span>-</span>}
-                    </React.Fragment>
-                  ))}
-                </div>
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
+              <label className="block text-sm whitespace-nowrap min-w-[20px]">
+                CNIC
+              </label>
+              <div className="flex items-center gap-1 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                {[...Array(13)].map((_, i) => (
+                  <React.Fragment key={`cnic-${i}`}>
+                    <input
+                      type="text"
+                      className="w-8 h-8 border border-gray-400 text-center bg-transparent"
+                      maxLength="1"
+                      ref={cnicRefs[i]}
+                      onChange={(e) => handleCnicInput(e, i)}
+                      onKeyDown={(e) => handleKeyDown(e, cnicRefs, i)}
+                    />
+                    {(i === 4 || i === 11) && <span>-</span>}
+                  </React.Fragment>
+                ))}
               </div>
-              <div className="flex items-center gap-4 ml-10">
-                <label className="block text-sm whitespace-nowrap min-w-[100px]">
-                  Date of Birth
-                </label>
-                <div className="w-full">
-                  <input
-                    type="date"
-                    className="w-full h-8 border border-gray-400 px-2 bg-transparent"
-                    value={formData.dateOfBirth}
-                    onChange={handleInputChange}
-                    name="dateOfBirth"
-                  />
-                  <span className="text-xs text-gray-500">
-                    (Please attach Birth Certificate or Form-B photocopy)
-                  </span>
-                </div>
+            </div>
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
+              <label className="block text-sm whitespace-nowrap min-w-[100px]">
+                Date of Birth
+              </label>
+              <div className="w-full">
+                <input
+                  type="date"
+                  className="w-full h-8 border border-gray-400 px-2 bg-transparent"
+                  value={formData.dateOfBirth}
+                  onChange={handleInputChange}
+                  name="dateOfBirth"
+                />
+                <span className="text-xs text-gray-500">
+                  (Please attach Birth Certificate or Form-B photocopy)
+                </span>
               </div>
             </div>
             {/* Qualification and Type of Disability */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Qualification
                 </label>
@@ -421,7 +453,7 @@ const DisablePerson = () => {
                   name="qulafication"
                 />
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Type of Disability
                 </label>
@@ -441,8 +473,8 @@ const DisablePerson = () => {
             </div>
 
             {/* Name and Cause of Disability */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Name of Disability
                 </label>
@@ -454,7 +486,7 @@ const DisablePerson = () => {
                   name="nameOfDisability"
                 />
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Cause of Disability
                 </label>
@@ -469,8 +501,8 @@ const DisablePerson = () => {
             </div>
 
             {/* Job and Income */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Type of Job can do
                 </label>
@@ -482,7 +514,7 @@ const DisablePerson = () => {
                   name="TypeOfJob"
                 />
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Source of Income
                 </label>
@@ -497,8 +529,8 @@ const DisablePerson = () => {
             </div>
 
             {/* Applied for and Phone */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Applied for
                 </label>
@@ -510,7 +542,7 @@ const DisablePerson = () => {
                   name="appliedFor"
                 />
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Phone Number
                 </label>
@@ -526,7 +558,7 @@ const DisablePerson = () => {
 
             {/* Address fields */}
             <div className="space-y-4">
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Present Address
                 </label>
@@ -538,7 +570,7 @@ const DisablePerson = () => {
                   name="presentAddress"
                 />
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                 <label className="block text-sm whitespace-nowrap min-w-[150px]">
                   Permanent Address
                 </label>
@@ -560,25 +592,23 @@ const DisablePerson = () => {
             </div>
 
             {/* Signature */}
-            <div className="mt-8">
-              <div className="text-right">
-                <div className="h-20 w-48 border border-gray-400 mb-2 ml-auto">
-                  <SignaturePad
-                    ref={applicantSignatureRef}
-                    canvasProps={{
-                      className: "w-full h-full",
-                    }}
-                  />
-                </div>
-                <button
-                  type="button"
-                  className="text-sm text-blue-500"
-                  onClick={() => clearSignature(applicantSignatureRef)}
-                >
-                  Clear
-                </button>
-                <p className="text-sm">Signature of Applicant</p>
+            <div className="p-4">
+              <label className="block mb-2">Applicant Signature</label>
+              <div className="w-full md:w-1/2 border-2 border-dashed border-gray-400 h-24">
+                <SignaturePad
+                  ref={applicantSignatureRef}
+                  canvasProps={{
+                    className: "w-full h-full"
+                  }}
+                />
               </div>
+              <button
+                type="button"
+                className="text-sm text-blue-500 mt-2"
+                onClick={clearSignature}
+              >
+                Clear
+              </button>
             </div>
 
             {/* Replace the Assessment Board section in your JSX with this: */}
@@ -588,7 +618,7 @@ const DisablePerson = () => {
               </h3>
 
               <div className="space-y-4">
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                   <label className="block text-sm whitespace-nowrap min-w-[150px]">
                     Is Applicant Declared
                   </label>
@@ -605,7 +635,7 @@ const DisablePerson = () => {
                   </select>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                   <label className="block text-sm whitespace-nowrap min-w-[150px]">
                     Disability / Impairment
                   </label>
@@ -619,8 +649,8 @@ const DisablePerson = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                     <label className="block text-sm whitespace-nowrap min-w-[150px]">
                       Fit to work
                     </label>
@@ -633,7 +663,7 @@ const DisablePerson = () => {
                       required
                     />
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                     <label className="block text-sm whitespace-nowrap min-w-[150px]">
                       Type of Advise
                     </label>
@@ -648,7 +678,7 @@ const DisablePerson = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                   <label className="block text-sm whitespace-nowrap min-w-[150px]">
                     Refer To
                   </label>
@@ -662,7 +692,7 @@ const DisablePerson = () => {
                   />
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                   <label className="block text-sm whitespace-nowrap min-w-[150px]">
                     Recommendation
                   </label>
@@ -676,8 +706,8 @@ const DisablePerson = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-center gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                     <label className="block text-sm whitespace-nowrap min-w-[50px]">
                       1.
                     </label>
@@ -690,7 +720,7 @@ const DisablePerson = () => {
                       required
                     />
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                     <label className="block text-sm whitespace-nowrap min-w-[50px]">
                       2.
                     </label>
@@ -707,107 +737,72 @@ const DisablePerson = () => {
               </div>
             </div>
 
-            {/* Board Signatures Section */}
-            <div className="mt-8">
-              <h3 className="text-lg font-bold mb-4">
-                SIGNATURE OF THE MEMBERS OF THE BOARD
-              </h3>
-
-              <div className="grid grid-cols-2 gap-8">
-                <div className="text-center">
-                  <div className="h-20 border border-gray-400 mb-2">
-                    <SignaturePad
-                      // ref={chairmanSignatureRef}
-                      canvasProps={{
-                        className: "w-full h-full",
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="text-sm text-blue-500"
-                    // onClick={() => clearSignature(chairmanSignatureRef)}
-                  >
-                    Clear
-                  </button>
-                  <p className="font-bold">MEDICAL SUPERINTENDENT/CHAIRMAN</p>
-                  <p className="text-sm">DISTRICT ASSESSMENT BOARD</p>
-                  <p className="text-xs text-gray-600">
-                    DISTRICT HEADQUARTER HOSPITAL CHARSADDA
-                  </p>
+            {/* CNIC Images Upload Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+              {/* Front CNIC */}
+              <div className="w-full">
+                <label className="block mb-2">CNIC Front Image</label>
+                <div className="border-2 border-dashed border-gray-400 h-48 relative mb-2 w-full">
+                  {cnicFrontPreview ? (
+                    <img src={cnicFrontPreview} alt="CNIC Front" className="w-full h-full object-contain"/>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-gray-500">Upload CNIC Front</p>
+                    </div>
+                  )}
                 </div>
-                <div className="text-center">
-                  <div className="h-20 border border-gray-400 mb-2">
-                    <SignaturePad
-                      // ref={secretarySignatureRef}
-                      canvasProps={{
-                        className: "w-full h-full",
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="text-sm text-blue-500"
-                    // onClick={() => clearSignature(secretarySignatureRef)}
+                <div className="flex justify-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, 'cnicFrontPic')}
+                    className="hidden"
+                    id="cnicFrontUpload"
+                  />
+                  <label 
+                    htmlFor="cnicFrontUpload"
+                    className="bg-[#3B82F6] text-white px-6 py-1.5 rounded text-sm cursor-pointer"
                   >
-                    Clear
-                  </button>
-                  <p className="font-bold">DISTRICT OFFICER/SECRETARY</p>
-                  <p className="text-sm">DISTRICT ASSESSMENT BOARD</p>
-                  <p className="text-xs text-gray-600">
-                    SOCIAL WELFARE DEPARTMENT CHARSADDA
-                  </p>
+                    Upload CNIC Front
+                  </label>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-8 mt-8">
-                <div className="text-center">
-                  <div className="h-20 border border-gray-400 mb-2">
-                    <SignaturePad
-                      // ref={managerSignatureRef}
-                      canvasProps={{
-                        className: "w-full h-full",
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="text-sm text-blue-500"
-                    // onClick={() => clearSignature(managerSignatureRef)}
-                  >
-                    Clear
-                  </button>
-                  <p className="font-bold">MANAGER</p>
-                  <p className="text-sm">
-                    Employment Exchange Charsadda / Member
-                  </p>
+              {/* Back CNIC */}
+              <div className="w-full">
+                <label className="block mb-2">CNIC Back Image</label>
+                <div className="border-2 border-dashed border-gray-400 h-48 relative mb-2 w-full">
+                  {cnicBackPreview ? (
+                    <img src={cnicBackPreview} alt="CNIC Back" className="w-full h-full object-contain"/>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-gray-500">Upload CNIC Back</p>
+                    </div>
+                  )}
                 </div>
-                <div className="text-center">
-                  <div className="h-20 border border-gray-400 mb-2">
-                    <SignaturePad
-                      // ref={specialistSignatureRef}
-                      canvasProps={{
-                        className: "w-full h-full",
-                      }}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="text-sm text-blue-500"
-                    // onClick={() => clearSignature(specialistSignatureRef)}
+                <div className="flex justify-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, 'cnicBackPic')}
+                    className="hidden"
+                    id="cnicBackUpload"
+                  />
+                  <label 
+                    htmlFor="cnicBackUpload"
+                    className="bg-[#3B82F6] text-white px-6 py-1.5 rounded text-sm cursor-pointer"
                   >
-                    Clear
-                  </button>
-                  <p className="font-bold">Concerned Specialist</p>
-                  <p className="text-sm">Member</p>
+                    Upload CNIC Back
+                  </label>
                 </div>
               </div>
             </div>
+
             {/* Submit Button */}
-            <div className="mt-8 flex justify-end">
+            <div className="mt-8 flex justify-center md:justify-end px-4">
               <button
                 type="submit"
-                className="bg-blue-500 text-white px-8 py-2 rounded hover:bg-blue-600 font-semibold"
+                className="bg-blue-500 text-white px-8 py-2 rounded hover:bg-blue-600 font-semibold w-full md:w-auto"
               >
                 Submit
               </button>

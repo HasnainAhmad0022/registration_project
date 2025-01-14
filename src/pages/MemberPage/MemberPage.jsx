@@ -49,10 +49,14 @@ const MemberPage = () => {
     politicalAffiliation: "",
     politicalAffiliationDescription: "",
     NGO: "",
-    NGODescription: ""
+    NGODescription: "",
+    cnicFrontPic: null,
+    cnicBackPic: null
   };
 
   const [formData, setFormData] = useState(initialFormState);
+  const [cnicFrontPreview, setCnicFrontPreview] = useState(null);
+  const [cnicBackPreview, setCnicBackPreview] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -102,21 +106,66 @@ const MemberPage = () => {
     }
   };
 
+  // Add file handling function
+  const handleFileUpload = (e, field) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (field === 'cnicFrontPic') {
+          setCnicFrontPreview(reader.result);
+        } else if (field === 'cnicBackPic') {
+          setCnicBackPreview(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+      setFormData(prev => ({
+        ...prev,
+        [field]: file
+      }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     try {
-      const submitData = {
-        ...formData,
-        userId: userData?.data?.user?._id
-      };
+      const submitData = new FormData();
+      
+      // Append all non-file form fields
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key !== 'cnicFrontPic' && key !== 'cnicBackPic') {
+          if (key === 'nameOfSchoolChildren') {
+            value.forEach((child, index) => {
+              Object.entries(child).forEach(([childKey, childValue]) => {
+                submitData.append(`nameOfSchoolChildren[${index}][${childKey}]`, childValue);
+              });
+            });
+          } else {
+            submitData.append(key, value);
+          }
+        }
+      });
+      
+      // Append files
+      if (formData.cnicFrontPic) {
+        submitData.append('cnicFrontPic', formData.cnicFrontPic);
+      }
+      if (formData.cnicBackPic) {
+        submitData.append('cnicBackPic', formData.cnicBackPic);
+      }
+
+      // Add userId
+      submitData.append('userId', userData?.data?.user?._id);
 
       const response = await userRequest.post("/member/addnewmember", submitData);
       
       toast.success(response?.data?.message || "Member added successfully");
       
-      // Clear form
+      // Clear form and previews
       setFormData(initialFormState);
+      setCnicFrontPreview(null);
+      setCnicBackPreview(null);
       
       // Clear CNIC inputs
       cnicRefs.forEach(ref => {
@@ -126,7 +175,7 @@ const MemberPage = () => {
         if (ref.current) ref.current.value = '';
       });
 
-      // Navigate to home page after delay
+      // Navigate after delay
       setTimeout(() => {
         navigate('/home-page');
       }, 1500);
@@ -144,29 +193,27 @@ const MemberPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="p-3 rounded-lg bg-gray-100">
-        <div className="max-w-6xl mx-auto p-6 relative bg-white">
+      <div className="p-2 md:p-3 rounded-lg bg-gray-100">
+        <div className="max-w-6xl mx-auto p-3 md:p-6 relative bg-white">
           {/* Watermark */}
           <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
             <img
               src={backgroundlogo}
               alt="Watermark"
-              className="w-[700px] h-[700px] object-contain"
+              className="w-[500px] md:w-[700px] h-[500px] md:h-[700px] object-contain"
             />
           </div>
 
           {/* Header Banner */}
-          <div className="rounded-lg p-1 bg-white mb-10">
+          <div className="rounded-lg p-1 bg-white mb-6 md:mb-10">
             <div className="relative">
-              {/* Green banner with curved edges */}
               <div className="bg-[#004F25] text-white relative">
-                {/* Light green accent on edges */}
-                <div className="absolute left-0 top-0 bottom-0 w-8 bg-[#90CE5F] rounded-r-lg"></div>
-                <div className="absolute right-0 top-0 bottom-0 w-8 bg-[#90CE5F] rounded-l-lg"></div>
+                <div className="absolute left-0 top-0 bottom-0 w-4 md:w-8 bg-[#90CE5F] rounded-r-lg"></div>
+                <div className="absolute right-0 top-0 bottom-0 w-4 md:w-8 bg-[#90CE5F] rounded-l-lg"></div>
 
-                <div className="flex items-center justify-between px-8 py-0">
+                <div className="flex flex-col md:flex-row items-center justify-between px-4 md:px-8 py-2 md:py-0">
                   {/* Left logo */}
-                  <div className="w-32 h-24 bg-white p-2 rounded-lg">
+                  <div className="w-24 md:w-32 h-20 md:h-24 bg-white p-2 rounded-lg mb-2 md:mb-0">
                     <img
                       src={backgroundlogo}
                       alt="Help System Logo"
@@ -175,19 +222,19 @@ const MemberPage = () => {
                   </div>
 
                   {/* Center text */}
-                  <div className="text-center space-y-1">
-                    <h1 className="text-4xl font-extrabold">HELP SYSTEM</h1>
-                    <h2 className="text-2xl font-bold">KHYBER PUKHTUNKHWA</h2>
-                    <p className="text-xl font-semibold">
+                  <div className="text-center space-y-0.5 md:space-y-1 py-2 md:py-0">
+                    <h1 className="text-2xl md:text-4xl font-extrabold">HELP SYSTEM</h1>
+                    <h2 className="text-xl md:text-2xl font-bold">KHYBER PUKHTUNKHWA</h2>
+                    <p className="text-base md:text-xl font-semibold">
                       Voluntary Social Welfare Organization
                     </p>
-                    <p className="text-xl font-semibold">
+                    <p className="text-base md:text-xl font-semibold">
                       Health Education Livelihood & Peace for All
                     </p>
                   </div>
 
                   {/* Right QR code */}
-                  <div className="w-32 h-24 bg-white p-2 rounded-lg">
+                  <div className="w-24 md:w-32 h-20 md:h-24 bg-white p-2 rounded-lg mt-2 md:mt-0">
                     <img
                       src={backgroundlogo}
                       alt="QR Code"
@@ -199,15 +246,15 @@ const MemberPage = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
             {/* 1. Personal Details */}
             <div className="space-y-4">
               <h4 className="font-bold">1. Personal Details</h4>
 
               {/* Name and CNIC */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
-                  <label>Full Name</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[80px]">Full Name</label>
                   <input
                     type="text"
                     name="childName"
@@ -218,99 +265,163 @@ const MemberPage = () => {
                   />
                 </div>
                 {/* CNIC Input */}
-                <div className="flex items-center gap-1">
-                  <label>CNIC</label>
-                  {[...Array(13)].map((_, i) => (
-                    <React.Fragment key={`cnic-${i}`}>
-                      <input
-                        type="text"
-                        className="w-8 h-8 border border-gray-400 text-center bg-transparent"
-                        maxLength="1"
-                        ref={cnicRefs[i]}
-                        onChange={(e) => handleCnicInput(e, i, cnicRefs, 'primary')}
-                        onKeyDown={(e) => handleKeyDown(e, cnicRefs, i)}
-                        required
-                      />
-                      {(i === 4 || i === 11) && <span>-</span>}
-                    </React.Fragment>
-                  ))}
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[50px]">CNIC</label>
+                  <div className="flex gap-1 overflow-x-auto pb-2 md:pb-0">
+                    {[...Array(13)].map((_, i) => (
+                      <React.Fragment key={`cnic-${i}`}>
+                        <input
+                          type="text"
+                          className="w-8 h-8 border border-gray-400 text-center bg-transparent flex-shrink-0"
+                          maxLength="1"
+                          ref={cnicRefs[i]}
+                          onChange={(e) => handleCnicInput(e, i, cnicRefs, 'primary')}
+                          onKeyDown={(e) => handleKeyDown(e, cnicRefs, i)}
+                          required
+                        />
+                        {(i === 4 || i === 11) && <span className="flex-shrink-0">-</span>}
+                      </React.Fragment>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               {/* Father/Husband and CNIC */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
-                  <label>Father/Husband</label>
-                  <select
-                    name="relation"
-                    value={formData.relation}
-                    onChange={handleInputChange}
-                    className="border border-gray-400 bg-transparent p-1"
-                    required
-                  >
-                    <option value="father">Father</option>
-                    <option value="husband">Husband</option>
-                  </select>
+              <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
+                {/* Father/Husband */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <select
+                      name="relation"
+                      value={formData.relation}
+                      onChange={handleInputChange}
+                      className="border border-gray-400 p-1"
+                      required
+                    >
+                      <option value="father">Father</option>
+                      <option value="husband">Husband</option>
+                    </select>
+                    <input
+                      type="text"
+                      name="relationName"
+                      value={formData.relationName}
+                      onChange={handleInputChange}
+                      className="border border-gray-400 p-1 flex-1"
+                      placeholder="Name"
+                      required
+                    />
+                  </div>
                 </div>
-                {/* Father/Relation CNIC Input */}
-                <div className="flex items-center gap-1">
-                  <label>CNIC</label>
-                  {[...Array(13)].map((_, i) => (
-                    <React.Fragment key={`father-cnic-${i}`}>
-                      <input
-                        type="text"
-                        className="w-8 h-8 border border-gray-400 text-center bg-transparent"
-                        maxLength="1"
-                        ref={fatherCnicRefs[i]}
-                        onChange={(e) => handleCnicInput(e, i, fatherCnicRefs, 'relation')}
-                        onKeyDown={(e) => handleKeyDown(e, fatherCnicRefs, i)}
-                        required
-                      />
-                      {(i === 4 || i === 11) && <span>-</span>}
-                    </React.Fragment>
-                  ))}
+
+                {/* CNIC Input */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm">CNIC</label>
+                  <div className="flex gap-1 overflow-x-auto pb-2">
+                    {[...Array(13)].map((_, i) => (
+                      <React.Fragment key={`cnic-${i}`}>
+                        <input
+                          type="text"
+                          className="w-8 h-8 border border-gray-400 text-center flex-shrink-0"
+                          maxLength="1"
+                          ref={cnicRefs[i]}
+                          onChange={(e) => handleCnicInput(e, i, cnicRefs, 'primary')}
+                          onKeyDown={(e) => handleKeyDown(e, cnicRefs, i)}
+                          required
+                        />
+                        {(i === 4 || i === 11) && <span className="flex-shrink-0">-</span>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Nationality, Religion, and Tehsil */}
+              <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-3 md:gap-4">
+                {/* Nationality */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm">Nationality</label>
+                  <input
+                    type="text"
+                    name="nationality"
+                    value={formData.nationality}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 p-1 w-full"
+                    required
+                  />
+                </div>
+
+                {/* Religion */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm">Religion</label>
+                  <input
+                    type="text"
+                    name="religion"
+                    value={formData.religion}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 p-1 w-full"
+                    required
+                  />
+                </div>
+
+                {/* Tehsil */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm">Tehsil</label>
+                  <input
+                    type="text"
+                    name="tehsil"
+                    value={formData.tehsil}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 p-1 w-full"
+                    required
+                  />
                 </div>
               </div>
 
               {/* Date of Birth and Gender */}
-              <div className="flex items-center gap-4">
-                <label>Date of Birth</label>
-                <input
-                  type="date"
-                  name="dateOfBirth"
-                  value={formData.dateOfBirth}
-                  onChange={handleInputChange}
-                  className="border border-gray-400 bg-transparent p-1"
-                  required
-                />
-                <label>Gender</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-1">
+              <div className="p-2">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex items-center gap-2">
+                    <label className="whitespace-nowrap text-sm">Date of Birth</label>
                     <input
-                      type="radio"
-                      name="gender"
-                      value="male"
-                      checked={formData.gender === "male"}
+                      type="date"
+                      name="dateOfBirth"
+                      value={formData.dateOfBirth}
                       onChange={handleInputChange}
+                      className="border border-gray-400 bg-transparent p-1"
                       required
-                    /> Male
-                  </label>
-                  <label className="flex items-center gap-1">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value="female"
-                      checked={formData.gender === "female"}
-                      onChange={handleInputChange}
-                    /> Female
-                  </label>
+                    />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <label className="text-sm">Gender</label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="gender"
+                          value="male"
+                          checked={formData.gender === "male"}
+                          onChange={handleInputChange}
+                          required
+                        /> Male
+                      </label>
+                      <label className="flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name="gender"
+                          value="female"
+                          checked={formData.gender === "female"}
+                          onChange={handleInputChange}
+                        /> Female
+                      </label>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Marital Status */}
-              <div className="flex items-center gap-4">
-                <label>Marital Status</label>
-                <div className="flex gap-4">
+              <div className="flex flex-col md:flex-row gap-2 md:items-center">
+                <label className="text-sm">Marital Status</label>
+                <div className="flex flex-wrap gap-4">
                   {["single", "married", "divorced", "widow"].map((status) => (
                     <label key={status} className="flex items-center gap-1">
                       <input
@@ -327,178 +438,118 @@ const MemberPage = () => {
                 </div>
               </div>
 
-              {/* Nationality and Religion */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
-                  <label>Nationality</label>
-                  <input
-                    type="text"
-                    name="nationality"
-                    value={formData.nationality}
-                    onChange={handleInputChange}
-                    className="flex-1 border border-gray-400 bg-transparent p-1"
-                    required
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label>Religion</label>
-                  <input
-                    type="text"
-                    name="religion"
-                    value={formData.religion}
-                    onChange={handleInputChange}
-                    className="flex-1 border border-gray-400 bg-transparent p-1"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Tehsil, District, Blood Group */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="flex items-center gap-2">
-                  <label>Tehsil</label>
-                  <input
-                    type="text"
-                    name="tehsil"
-                    value={formData.tehsil}
-                    onChange={handleInputChange}
-                    className="flex-1 border border-gray-400 bg-transparent p-1"
-                    required
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label>District</label>
-                  <input
-                    type="text"
-                    name="district"
-                    value={formData.district}
-                    onChange={handleInputChange}
-                    className="flex-1 border border-gray-400 bg-transparent p-1"
-                    required
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label>Blood Group</label>
-                  <input
-                    type="text"
-                    name="bloodGroup"
-                    value={formData.bloodGroup}
-                    onChange={handleInputChange}
-                    className="flex-1 border border-gray-400 bg-transparent p-1"
-                    required
-                  />
-                </div>
-              </div>
-                            {/* Qualification and Profession */}
-                            <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
-                  <label>Qualification</label>
-                  <input
-                    type="text"
-                    name="qualification"
-                    value={formData.qualification}
-                    onChange={handleInputChange}
-                    className="flex-1 border border-gray-400 bg-transparent p-1"
-                    required
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label>Profession</label>
-                  <input
-                    type="text"
-                    name="profession"
-                    value={formData.profession}
-                    onChange={handleInputChange}
-                    className="flex-1 border border-gray-400 bg-transparent p-1"
-                    required
-                  />
-                </div>
+              {/* Blood Group */}
+              <div className="flex flex-col md:flex-row md:items-center gap-2">
+                <label className="text-sm">Blood Group</label>
+                <input
+                  type="text"
+                  name="bloodGroup"
+                  value={formData.bloodGroup}
+                  onChange={handleInputChange}
+                  className="border border-gray-400 bg-transparent p-1 w-full md:w-auto"
+                  required
+                />
               </div>
 
               {/* Address Information */}
               <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <label>Current Address</label>
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm">Current Address</label>
                   <input
                     type="text"
                     name="currentAddress"
                     value={formData.currentAddress}
                     onChange={handleInputChange}
-                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    className="border border-gray-400 bg-transparent p-1 w-full"
                     required
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <label>Permanent Address</label>
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm">Permanent Address</label>
                   <input
                     type="text"
                     name="permanentAddress"
                     value={formData.permanentAddress}
                     onChange={handleInputChange}
-                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    className="border border-gray-400 bg-transparent p-1 w-full"
                     required
                   />
                 </div>
               </div>
 
               {/* Contact Information */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
-                  <label>Contact Number</label>
+              <div className="space-y-2">
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm">Contact Number</label>
                   <input
                     type="text"
                     name="contactNumber"
                     value={formData.contactNumber}
                     onChange={handleInputChange}
-                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    className="border border-gray-400 bg-transparent p-1 w-full"
                     required
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <label>Alternative Contact</label>
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm">Alternative Contact</label>
                   <input
                     type="text"
                     name="contactNumber2"
                     value={formData.contactNumber2}
                     onChange={handleInputChange}
-                    className="flex-1 border border-gray-400 bg-transparent p-1"
+                    className="border border-gray-400 bg-transparent p-1 w-full"
                   />
                 </div>
               </div>
 
               {/* Accommodation and Dependents */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
-                  <label>Type of Accommodation</label>
-                  <select
-                    name="TypeOfAccommodation"
-                    value={formData.TypeOfAccommodation}
-                    onChange={handleInputChange}
-                    className="flex-1 border border-gray-400 bg-transparent p-1"
-                    required
-                  >
-                    <option value="">Select Type</option>
-                    <option value="owned">Owned</option>
-                    <option value="rented">Rented</option>
-                  </select>
-                </div>
-                <div className="flex items-center gap-2">
-                  <label>Number of Dependents</label>
-                  <input
-                    type="number"
-                    name="noOfDependents"
-                    value={formData.noOfDependents}
-                    onChange={handleInputChange}
-                    className="flex-1 border border-gray-400 bg-transparent p-1"
-                    required
-                  />
+              <div className="p-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col md:flex-row md:items-center gap-2">
+                    <label className="text-sm whitespace-nowrap">Type of Accommodation</label>
+                    <select
+                      name="TypeOfAccommodation"
+                      value={formData.TypeOfAccommodation}
+                      onChange={handleInputChange}
+                      className="border border-gray-400 bg-transparent p-1 w-full md:w-auto"
+                      required
+                    >
+                      <option value="">Select Type</option>
+                      <option value="owned">Owned</option>
+                      <option value="rented">Rented</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col md:flex-row md:items-center gap-2">
+                    <label className="text-sm whitespace-nowrap">Number of Dependents</label>
+                    <input
+                      type="number"
+                      name="noOfDependents"
+                      value={formData.noOfDependents}
+                      onChange={handleInputChange}
+                      className="border border-gray-400 bg-transparent p-1 w-full md:w-auto"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
+              {/* Total Children */}
+              <div className="flex flex-col gap-1">
+                <label className="text-sm">Total Children</label>
+                <input
+                  type="number"
+                  name="noOfChildren"
+                  value={formData.noOfChildren}
+                  onChange={handleInputChange}
+                  className="border border-gray-400 bg-transparent p-1 w-full"
+                  required
+                />
+              </div>
+
               {/* Children Information */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
-                  <label>Total Children</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[80px]">Total Children</label>
                   <input
                     type="number"
                     name="noOfChildren"
@@ -508,8 +559,8 @@ const MemberPage = () => {
                     required
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <label>Children in School</label>
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[80px]">Children in School</label>
                   <input
                     type="number"
                     name="noOfChildrenInSchool"
@@ -519,8 +570,8 @@ const MemberPage = () => {
                     required
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <label>Male Children</label>
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[80px]">Male Children</label>
                   <input
                     type="number"
                     name="noOfChildrenMale"
@@ -530,8 +581,8 @@ const MemberPage = () => {
                     required
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <label>Female Children</label>
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="min-w-[80px]">Female Children</label>
                   <input
                     type="number"
                     name="noOfChildrenFemale"
@@ -698,11 +749,72 @@ const MemberPage = () => {
               </div>
             </div>
 
+            {/* CNIC Images Upload Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 p-2 md:p-4">
+              {/* Front CNIC */}
+              <div>
+                <label className="block mb-2">CNIC Front Image</label>
+                <div className="border-2 border-dashed border-gray-400 h-48 relative mb-2">
+                  {cnicFrontPreview ? (
+                    <img src={cnicFrontPreview} alt="CNIC Front" className="w-full h-full object-contain"/>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-gray-500">Upload CNIC Front</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex justify-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, 'cnicFrontPic')}
+                    className="hidden"
+                    id="cnicFrontUpload"
+                  />
+                  <label 
+                    htmlFor="cnicFrontUpload"
+                    className="bg-[#3B82F6] text-white px-6 py-1.5 rounded text-sm cursor-pointer"
+                  >
+                    Upload CNIC Front
+                  </label>
+                </div>
+              </div>
+
+              {/* Back CNIC */}
+              <div>
+                <label className="block mb-2">CNIC Back Image</label>
+                <div className="border-2 border-dashed border-gray-400 h-48 relative mb-2">
+                  {cnicBackPreview ? (
+                    <img src={cnicBackPreview} alt="CNIC Back" className="w-full h-full object-contain"/>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-gray-500">Upload CNIC Back</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex justify-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, 'cnicBackPic')}
+                    className="hidden"
+                    id="cnicBackUpload"
+                  />
+                  <label 
+                    htmlFor="cnicBackUpload"
+                    className="bg-[#3B82F6] text-white px-6 py-1.5 rounded text-sm cursor-pointer"
+                  >
+                    Upload CNIC Back
+                  </label>
+                </div>
+              </div>
+            </div>
+
             {/* Submit Button */}
-            <div className="mt-8 flex justify-end">
+            <div className="mt-8 flex justify-center md:justify-end p-2 md:p-4">
               <button
                 type="submit"
-                className="bg-blue-500 text-white px-8 py-2 rounded hover:bg-blue-600 font-semibold"
+                className="bg-blue-500 text-white px-8 py-2 rounded hover:bg-blue-600 font-semibold w-full md:w-auto"
               >
                 Submit
               </button>
