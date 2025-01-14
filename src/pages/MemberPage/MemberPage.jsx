@@ -100,6 +100,30 @@ const MemberPage = () => {
     }
   };
 
+  const dobRefs = Array(8).fill(0).map(() => useRef(null));
+  const handleDobInput = (e, index) => {
+    const value = e.target.value;
+    if (!/^\d*$/.test(value)) {
+      e.target.value = "";
+      return;
+    }
+    if (value.length === 1 && index < 7) {
+      dobRefs[index + 1].current.focus();
+    }
+
+    // Update DOB in formData
+    const allDobInputs = dobRefs.map(ref => ref.current.value);
+    // Format as YYYY-MM-DD directly for API compatibility
+    const year = allDobInputs.slice(4,8).join('');
+    const month = allDobInputs.slice(2,4).join('');
+    const day = allDobInputs.slice(0,2).join('');
+    
+    if (day && month && year) {
+      const dateString = `${year}-${month}-${day}`;
+      setFormData(prev => ({ ...prev, dateOfBirth: dateString }));
+    }
+  };
+
   const handleKeyDown = (e, refs, index) => {
     if (e.key === "Backspace" && e.target.value === "" && index > 0) {
       refs[index - 1].current.focus();
@@ -132,8 +156,11 @@ const MemberPage = () => {
     try {
       const submitData = new FormData();
       
+      // Create a copy of formData to modify
+      const formDataToSubmit = { ...formData };
+      
       // Append all non-file form fields
-      Object.entries(formData).forEach(([key, value]) => {
+      Object.entries(formDataToSubmit).forEach(([key, value]) => {
         if (key !== 'cnicFrontPic' && key !== 'cnicBackPic') {
           if (key === 'nameOfSchoolChildren') {
             value.forEach((child, index) => {
@@ -172,6 +199,10 @@ const MemberPage = () => {
         if (ref.current) ref.current.value = '';
       });
       fatherCnicRefs.forEach(ref => {
+        if (ref.current) ref.current.value = '';
+      });
+      // Clear DOB inputs
+      dobRefs.forEach(ref => {
         if (ref.current) ref.current.value = '';
       });
 
@@ -306,7 +337,7 @@ const MemberPage = () => {
 
                 {/* Father/Husband CNIC Input */}
                 <div className="flex flex-col md:flex-row md:items-center gap-2">
-                  <label className="text-sm">CNIC</label>
+                  <label className="min-w-[50px]">CNIC</label>
                   <div className="flex gap-1 overflow-x-auto pb-2">
                     {[...Array(13)].map((_, i) => (
                       <React.Fragment key={`father-cnic-${i}`}>
@@ -326,8 +357,8 @@ const MemberPage = () => {
                 </div>
               </div>
 
-              {/* Nationality, Religion, and Tehsil */}
-              <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-3 md:gap-4">
+              {/* Nationality, Religion, Tehsil, and District */}
+              <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-4 md:gap-4">
                 {/* Nationality */}
                 <div className="flex flex-col gap-1">
                   <label className="text-sm">Nationality</label>
@@ -366,12 +397,25 @@ const MemberPage = () => {
                     required
                   />
                 </div>
+
+                {/* District */}
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm">District</label>
+                  <input
+                    type="text"
+                    name="district"
+                    value={formData.district}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 p-1 w-full"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Date of Birth and Gender */}
               <div className="p-2">
                 <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex items-center gap-2">
+                  {/* <div className="flex items-center gap-2">
                     <label className="whitespace-nowrap text-sm">Date of Birth</label>
                     <input
                       type="date"
@@ -381,6 +425,26 @@ const MemberPage = () => {
                       className="border border-gray-400 bg-transparent p-1"
                       required
                     />
+                  </div> */}
+                  <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
+                    <label className="block text-sm whitespace-nowrap min-w-[10px]">
+                      Date
+                    </label>
+                    <div className="flex items-center gap-1 w-full md:w-auto overflow-x-auto">
+                      {[...Array(8)].map((_, i) => (
+                        <React.Fragment key={`date-${i}`}>
+                          <input
+                            type="text"
+                            className="w-8 h-8 border border-gray-400 text-center bg-transparent"
+                            maxLength="1"
+                            ref={dobRefs[i]}
+                            onChange={(e) => handleDobInput(e, i)}
+                            onKeyDown={(e) => handleKeyDown(e, dobRefs, i)}
+                          />
+                          {(i === 1 || i === 3) && <span>-</span>}
+                        </React.Fragment>
+                      ))}
+                    </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <label className="text-sm">Gender</label>
@@ -429,17 +493,46 @@ const MemberPage = () => {
                 </div>
               </div>
 
-              {/* Blood Group */}
-              <div className="flex flex-col md:flex-row md:items-center gap-2">
-                <label className="text-sm">Blood Group</label>
-                <input
-                  type="text"
-                  name="bloodGroup"
-                  value={formData.bloodGroup}
-                  onChange={handleInputChange}
-                  className="border border-gray-400 bg-transparent p-1 w-full md:w-auto"
-                  required
-                />
+              {/* Blood Group, Qualification, and Profession */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Blood Group */}
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="text-sm">Blood Group</label>
+                  <input
+                    type="text"
+                    name="bloodGroup"
+                    value={formData.bloodGroup}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 bg-transparent p-1 w-full md:w-auto"
+                    required
+                  />
+                </div>
+
+                {/* Qualification */}
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="text-sm">Qualification</label>
+                  <input
+                    type="text"
+                    name="qualification"
+                    value={formData.qualification}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 bg-transparent p-1 w-full md:w-auto"
+                    required
+                  />
+                </div>
+
+                {/* Profession */}
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
+                  <label className="text-sm">Profession</label>
+                  <input
+                    type="text"
+                    name="profession"
+                    value={formData.profession}
+                    onChange={handleInputChange}
+                    className="border border-gray-400 bg-transparent p-1 w-full md:w-auto"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Address Information */}

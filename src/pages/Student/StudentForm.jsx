@@ -17,6 +17,12 @@ const StudentForm = () => {
   // Create ref for guardian signature
   const guardianSignatureRef = useRef();
 
+  // Create refs for date of birth
+  const dobRefs = Array(8).fill(0).map(() => useRef(null));
+
+  // Create refs for admission date
+  const admissionDateRefs = Array(8).fill(0).map(() => useRef(null));
+
   const initialFormState = {
     childName: "",
     fatherName: "",
@@ -123,6 +129,64 @@ const StudentForm = () => {
     }
   };
 
+  const handleDobInput = (e, index) => {
+    const value = e.target.value;
+    if (!/^\d*$/.test(value)) {
+      e.target.value = "";
+      return;
+    }
+    if (value.length === 1 && index < 7) {
+      dobRefs[index + 1].current.focus();
+    }
+
+    // Update DOB in formData
+    const allDobInputs = dobRefs.map(ref => ref.current.value);
+    // Format as YYYY-MM-DD directly for API compatibility
+    const year = allDobInputs.slice(4,8).join('');
+    const month = allDobInputs.slice(2,4).join('');
+    const day = allDobInputs.slice(0,2).join('');
+    
+    if (day && month && year) {
+      const dateString = `${year}-${month}-${day}`;
+      setFormData(prev => ({ ...prev, dataOfBirth: dateString }));
+    }
+  };
+
+  const handleDobKeyDown = (e, index) => {
+    if (e.key === "Backspace" && e.target.value === "" && index > 0) {
+      dobRefs[index - 1].current.focus();
+    }
+  };
+
+  const handleAdmissionDateInput = (e, index) => {
+    const value = e.target.value;
+    if (!/^\d*$/.test(value)) {
+      e.target.value = "";
+      return;
+    }
+    if (value.length === 1 && index < 7) {
+      admissionDateRefs[index + 1].current.focus();
+    }
+
+    // Update Date of Admission in formData
+    const allDateInputs = admissionDateRefs.map(ref => ref.current.value);
+    // Format as YYYY-MM-DD directly for API compatibility
+    const year = allDateInputs.slice(4,8).join('');
+    const month = allDateInputs.slice(2,4).join('');
+    const day = allDateInputs.slice(0,2).join('');
+    
+    if (day && month && year) {
+      const dateString = `${year}-${month}-${day}`;
+      setFormData(prev => ({ ...prev, DateOfAdmission: dateString }));
+    }
+  };
+
+  const handleAdmissionDateKeyDown = (e, index) => {
+    if (e.key === "Backspace" && e.target.value === "" && index > 0) {
+      admissionDateRefs[index - 1].current.focus();
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -160,6 +224,14 @@ const StudentForm = () => {
       setCnicFrontPreview(null);
       setCnicBackPreview(null);
       clearSignature();
+
+      // Clear DOB and Admission Date inputs after successful submission
+      dobRefs.forEach(ref => {
+        if (ref.current) ref.current.value = '';
+      });
+      admissionDateRefs.forEach(ref => {
+        if (ref.current) ref.current.value = '';
+      });
 
       // Navigate after success
       setTimeout(() => {
@@ -218,7 +290,7 @@ const StudentForm = () => {
                     {[...Array(13)].map((_, i) => (
                       <React.Fragment key={`father-cnic-${i}`}>
                         <input
-                          type="text"
+                          type="number"
                           className="w-8 h-8 border border-gray-400 text-center flex-shrink-0"
                           maxLength="1"
                           ref={fatherCnicRefs[i]}
@@ -249,7 +321,7 @@ const StudentForm = () => {
                     {[...Array(13)].map((_, i) => (
                       <React.Fragment key={`mother-cnic-${i}`}>
                         <input
-                          type="text"
+                          type="number"
                           className="w-8 h-8 border border-gray-400 text-center flex-shrink-0"
                           maxLength="1"
                           ref={motherCnicRefs[i]}
@@ -264,14 +336,52 @@ const StudentForm = () => {
 
                 <div className="flex flex-col md:flex-row md:items-center gap-2">
                   <label className="min-w-[100px]">Date of Birth</label>
-                  <input
-                    type="date"
-                    name="dataOfBirth"
-                    value={formData.dataOfBirth}
-                    onChange={handleInputChange}
-                    className="border border-gray-400 w-full md:flex-1 p-1"
-                    required
-                  />
+                  <div className="flex gap-1 items-center">
+                    {/* Day */}
+                    {[...Array(2)].map((_, i) => (
+                      <React.Fragment key={`dob-day-${i}`}>
+                        <input
+                          type="number"
+                          className="w-8 h-8 border border-gray-400 text-center bg-transparent flex-shrink-0"
+                          maxLength="1"
+                          ref={dobRefs[i]}
+                          onChange={(e) => handleDobInput(e, i)}
+                          onKeyDown={(e) => handleDobKeyDown(e, i)}
+                          required
+                        />
+                      </React.Fragment>
+                    ))}
+                    <span className="flex-shrink-0">-</span>
+                    {/* Month */}
+                    {[...Array(2)].map((_, i) => (
+                      <React.Fragment key={`dob-month-${i}`}>
+                        <input
+                          type="number"
+                          className="w-8 h-8 border border-gray-400 text-center bg-transparent flex-shrink-0"
+                          maxLength="1"
+                          ref={dobRefs[i + 2]}
+                          onChange={(e) => handleDobInput(e, i + 2)}
+                          onKeyDown={(e) => handleDobKeyDown(e, i + 2)}
+                          required
+                        />
+                      </React.Fragment>
+                    ))}
+                    <span className="flex-shrink-0">-</span>
+                    {/* Year */}
+                    {[...Array(4)].map((_, i) => (
+                      <React.Fragment key={`dob-year-${i}`}>
+                        <input
+                          type="number"
+                          className="w-8 h-8 border border-gray-400 text-center bg-transparent flex-shrink-0"
+                          maxLength="1"
+                          ref={dobRefs[i + 4]}
+                          onChange={(e) => handleDobInput(e, i + 4)}
+                          onKeyDown={(e) => handleDobKeyDown(e, i + 4)}
+                          required
+                        />
+                      </React.Fragment>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="flex flex-col md:flex-row md:items-center gap-2">
@@ -315,14 +425,52 @@ const StudentForm = () => {
 
                 <div className="flex flex-col md:flex-row md:items-center gap-2">
                   <label className="min-w-[150px]">Date of Admission</label>
-                  <input
-                    type="date"
-                    name="DateOfAdmission"
-                    value={formData.DateOfAdmission}
-                    onChange={handleInputChange}
-                    className="border border-gray-400 w-full md:flex-1 p-1"
-                    required
-                  />
+                  <div className="flex gap-1 items-center">
+                    {/* Day */}
+                    {[...Array(2)].map((_, i) => (
+                      <React.Fragment key={`admission-day-${i}`}>
+                        <input
+                          type="text"
+                          className="w-8 h-8 border border-gray-400 text-center bg-transparent flex-shrink-0"
+                          maxLength="1"
+                          ref={admissionDateRefs[i]}
+                          onChange={(e) => handleAdmissionDateInput(e, i)}
+                          onKeyDown={(e) => handleAdmissionDateKeyDown(e, i)}
+                          required
+                        />
+                      </React.Fragment>
+                    ))}
+                    <span className="flex-shrink-0">-</span>
+                    {/* Month */}
+                    {[...Array(2)].map((_, i) => (
+                      <React.Fragment key={`admission-month-${i}`}>
+                        <input
+                          type="text"
+                          className="w-8 h-8 border border-gray-400 text-center bg-transparent flex-shrink-0"
+                          maxLength="1"
+                          ref={admissionDateRefs[i + 2]}
+                          onChange={(e) => handleAdmissionDateInput(e, i + 2)}
+                          onKeyDown={(e) => handleAdmissionDateKeyDown(e, i + 2)}
+                          required
+                        />
+                      </React.Fragment>
+                    ))}
+                    <span className="flex-shrink-0">-</span>
+                    {/* Year */}
+                    {[...Array(4)].map((_, i) => (
+                      <React.Fragment key={`admission-year-${i}`}>
+                        <input
+                          type="text"
+                          className="w-8 h-8 border border-gray-400 text-center bg-transparent flex-shrink-0"
+                          maxLength="1"
+                          ref={admissionDateRefs[i + 4]}
+                          onChange={(e) => handleAdmissionDateInput(e, i + 4)}
+                          onKeyDown={(e) => handleAdmissionDateKeyDown(e, i + 4)}
+                          required
+                        />
+                      </React.Fragment>
+                    ))}
+                  </div>
                 </div>
               </div>
 
