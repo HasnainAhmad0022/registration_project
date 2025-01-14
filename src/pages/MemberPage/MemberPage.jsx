@@ -264,14 +264,14 @@ const MemberPage = () => {
                     required
                   />
                 </div>
-                {/* CNIC Input */}
+                {/* User CNIC Input */}
                 <div className="flex flex-col md:flex-row md:items-center gap-2">
                   <label className="min-w-[50px]">CNIC</label>
                   <div className="flex gap-1 overflow-x-auto pb-2 md:pb-0">
                     {[...Array(13)].map((_, i) => (
-                      <React.Fragment key={`cnic-${i}`}>
+                      <React.Fragment key={`user-cnic-${i}`}>
                         <input
-                          type="text"
+                          type="number"
                           className="w-8 h-8 border border-gray-400 text-center bg-transparent flex-shrink-0"
                           maxLength="1"
                           ref={cnicRefs[i]}
@@ -286,46 +286,37 @@ const MemberPage = () => {
                 </div>
               </div>
 
-              {/* Father/Husband and CNIC */}
-              <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-2 md:gap-4">
-                {/* Father/Husband */}
+              {/* Father/Husband */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
+                    <label>Father/Husband</label>
                     <select
                       name="relation"
                       value={formData.relation}
                       onChange={handleInputChange}
-                      className="border border-gray-400 p-1"
+                      className="border border-gray-400 bg-transparent p-1"
                       required
                     >
                       <option value="father">Father</option>
                       <option value="husband">Husband</option>
                     </select>
-                    <input
-                      type="text"
-                      name="relationName"
-                      value={formData.relationName}
-                      onChange={handleInputChange}
-                      className="border border-gray-400 p-1 flex-1"
-                      placeholder="Name"
-                      required
-                    />
                   </div>
                 </div>
 
-                {/* CNIC Input */}
-                <div className="flex flex-col gap-1">
+                {/* Father/Husband CNIC Input */}
+                <div className="flex flex-col md:flex-row md:items-center gap-2">
                   <label className="text-sm">CNIC</label>
                   <div className="flex gap-1 overflow-x-auto pb-2">
                     {[...Array(13)].map((_, i) => (
-                      <React.Fragment key={`cnic-${i}`}>
+                      <React.Fragment key={`father-cnic-${i}`}>
                         <input
-                          type="text"
+                          type="number"
                           className="w-8 h-8 border border-gray-400 text-center flex-shrink-0"
                           maxLength="1"
-                          ref={cnicRefs[i]}
-                          onChange={(e) => handleCnicInput(e, i, cnicRefs, 'primary')}
-                          onKeyDown={(e) => handleKeyDown(e, cnicRefs, i)}
+                          ref={fatherCnicRefs[i]}
+                          onChange={(e) => handleCnicInput(e, i, fatherCnicRefs, 'secondary')}
+                          onKeyDown={(e) => handleKeyDown(e, fatherCnicRefs, i)}
                           required
                         />
                         {(i === 4 || i === 11) && <span className="flex-shrink-0">-</span>}
