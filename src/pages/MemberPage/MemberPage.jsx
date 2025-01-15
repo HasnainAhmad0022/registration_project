@@ -1,11 +1,11 @@
 import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import backgroundlogo from "../../images/backgroundlogo.png";
 import Navbar from "../../components/Navbar/Navbar";
 import userRequest from "../../utils/userRequest/userRequest";
 import toast, { Toaster } from "react-hot-toast";
 import Loader from "../../components/Loader/Loader";
 import { Images } from "../../utils/ImagesConfig";
+import { PlusCircleIcon } from '@heroicons/react/24/outline';
 
 const MemberPage = () => {
   const navigate = useNavigate();
@@ -229,6 +229,19 @@ const MemberPage = () => {
     }
   };
 
+  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+  // Add this function to handle adding new row
+  const addNewChildRow = () => {
+    setFormData(prev => ({
+      ...prev,
+      nameOfSchoolChildren: [
+        ...prev.nameOfSchoolChildren,
+        { name: "", class: "", age: "", SchoolName: "" }
+      ]
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {loading && <Loader />}
@@ -384,14 +397,17 @@ const MemberPage = () => {
                 {/* Religion */}
                 <div className="flex flex-col gap-1">
                   <label className="text-sm">Religion</label>
-                  <input
-                    type="text"
+                  <select
                     name="religion"
                     value={formData.religion}
                     onChange={handleInputChange}
                     className="border border-gray-400 p-1 w-full"
                     required
-                  />
+                  >
+                    <option value="">Select Religion</option>
+                    <option value="muslim">Muslim</option>
+                    <option value="non-muslim">Non-Muslim</option>
+                  </select>
                 </div>
 
                 {/* Tehsil */}
@@ -507,14 +523,20 @@ const MemberPage = () => {
                 {/* Blood Group */}
                 <div className="flex flex-col md:flex-row md:items-center gap-2">
                   <label className="text-sm">Blood Group</label>
-                  <input
-                    type="text"
+                  <select
                     name="bloodGroup"
                     value={formData.bloodGroup}
                     onChange={handleInputChange}
                     className="border border-gray-400 bg-transparent p-1 w-full md:w-auto"
                     required
-                  />
+                  >
+                    <option value="">Select Blood Group</option>
+                    {bloodGroups.map(group => (
+                      <option key={group} value={group}>
+                        {group}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Qualification */}
@@ -689,7 +711,18 @@ const MemberPage = () => {
 
               {/* School Children Details */}
               <div className="space-y-4">
-                <h4 className="font-semibold">Children's School Details</h4>
+                <div className="flex justify-between items-center">
+                  <h4 className="font-semibold">Children's School Details</h4>
+                  <button
+                    type="button"
+                    onClick={addNewChildRow}
+                    className="flex items-center gap-1 text-blue-600 hover:text-blue-700"
+                  >
+                    <PlusCircleIcon className="w-5 h-5" />
+                    <span>Add Child</span>
+                  </button>
+                </div>
+                
                 {formData.nameOfSchoolChildren.map((child, index) => (
                   <div key={index} className="grid grid-cols-4 gap-4">
                     <input

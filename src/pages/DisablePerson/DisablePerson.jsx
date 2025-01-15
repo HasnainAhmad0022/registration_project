@@ -58,6 +58,8 @@ const DisablePerson = () => {
 
   const [formData, setFormData] = useState(initialFormState);
 
+  const dobRefs = Array(8).fill(0).map(() => useRef(null));
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -132,6 +134,35 @@ const DisablePerson = () => {
         }
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDobInput = (e, index) => {
+    const value = e.target.value;
+    if (!/^\d*$/.test(value)) {
+      e.target.value = "";
+      return;
+    }
+    if (value.length === 1 && index < 7) {
+      dobRefs[index + 1].current.focus();
+    }
+
+    // Update DOB in formData
+    const allDobInputs = dobRefs.map(ref => ref.current.value);
+    // Format as YYYY-MM-DD directly for API compatibility
+    const year = allDobInputs.slice(4,8).join('');
+    const month = allDobInputs.slice(2,4).join('');
+    const day = allDobInputs.slice(0,2).join('');
+    
+    if (day && month && year) {
+      const dateString = `${year}-${month}-${day}`;
+      setFormData(prev => ({ ...prev, dateOfBirth: dateString }));
+    }
+  };
+
+  const handleDobKeyDown = (e, index) => {
+    if (e.key === "Backspace" && e.target.value === "" && index > 0) {
+      dobRefs[index - 1].current.focus();
     }
   };
 
@@ -433,17 +464,51 @@ const DisablePerson = () => {
               <label className="block text-sm whitespace-nowrap min-w-[100px]">
                 Date of Birth
               </label>
-              <div className="w-full">
-                <input
-                  type="date"
-                  className="w-full h-8 border border-gray-400 px-2 bg-transparent"
-                  value={formData.dateOfBirth}
-                  onChange={handleInputChange}
-                  name="dateOfBirth"
-                />
-                <span className="text-xs text-gray-500">
-                  (Please attach Birth Certificate or Form-B photocopy)
-                </span>
+              <div className="flex gap-1 items-center">
+                {/* Day */}
+                {[...Array(2)].map((_, i) => (
+                  <React.Fragment key={`dob-day-${i}`}>
+                    <input
+                      type="text"
+                      className="w-8 h-8 border border-gray-400 text-center bg-transparent flex-shrink-0"
+                      maxLength="1"
+                      ref={dobRefs[i]}
+                      onChange={(e) => handleDobInput(e, i)}
+                      onKeyDown={(e) => handleDobKeyDown(e, i)}
+                      required
+                    />
+                  </React.Fragment>
+                ))}
+                <span className="flex-shrink-0">-</span>
+                {/* Month */}
+                {[...Array(2)].map((_, i) => (
+                  <React.Fragment key={`dob-month-${i}`}>
+                    <input
+                      type="text"
+                      className="w-8 h-8 border border-gray-400 text-center bg-transparent flex-shrink-0"
+                      maxLength="1"
+                      ref={dobRefs[i + 2]}
+                      onChange={(e) => handleDobInput(e, i + 2)}
+                      onKeyDown={(e) => handleDobKeyDown(e, i + 2)}
+                      required
+                    />
+                  </React.Fragment>
+                ))}
+                <span className="flex-shrink-0">-</span>
+                {/* Year */}
+                {[...Array(4)].map((_, i) => (
+                  <React.Fragment key={`dob-year-${i}`}>
+                    <input
+                      type="text"
+                      className="w-8 h-8 border border-gray-400 text-center bg-transparent flex-shrink-0"
+                      maxLength="1"
+                      ref={dobRefs[i + 4]}
+                      onChange={(e) => handleDobInput(e, i + 4)}
+                      onKeyDown={(e) => handleDobKeyDown(e, i + 4)}
+                      required
+                    />
+                  </React.Fragment>
+                ))}
               </div>
             </div>
             {/* Qualification and Type of Disability */}

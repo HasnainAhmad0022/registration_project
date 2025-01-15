@@ -255,6 +255,8 @@ const StudentForm = () => {
     }
   };
 
+  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
   return (
     <div className="min-h-screen bg-gray-100">
       {loading && <Loader />}
@@ -490,14 +492,20 @@ const StudentForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col md:flex-row md:items-center gap-2">
                   <label>Blood Group</label>
-                  <input
-                    type="text"
+                  <select
                     name="bloodGroup"
                     value={formData.bloodGroup}
                     onChange={handleInputChange}
                     className="border border-gray-400 w-full md:flex-1 p-1"
                     required
-                  />
+                  >
+                    <option value="">Select Blood Group</option>
+                    {bloodGroups.map(group => (
+                      <option key={group} value={group}>
+                        {group}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="flex flex-col md:flex-row md:items-center gap-2">
@@ -640,6 +648,21 @@ const StudentForm = () => {
                     required
                   />
                 </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row md:items-center gap-2">
+                <label>Religion</label>
+                <select
+                  name="religion"
+                  value={formData.religion}
+                  onChange={handleInputChange}
+                  className="border border-gray-400 w-full md:flex-1 p-1"
+                  required
+                >
+                  <option value="">Select Religion</option>
+                  <option value="muslim">Muslim</option>
+                  <option value="non-muslim">Non-Muslim</option>
+                </select>
               </div>
             </div>
 
