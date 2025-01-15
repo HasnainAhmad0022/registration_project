@@ -2,7 +2,7 @@ import React from 'react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css'; // Don't forget to import the styles
 
-const Card = ({ isLoading, title, buttonText, onClick}) => {
+const Card = ({ isLoading, title, buttonText, onClick, image }) => {
   if (isLoading) {
     return (
       <div className="bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
@@ -19,8 +19,8 @@ const Card = ({ isLoading, title, buttonText, onClick}) => {
     <div className="bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 hover:scale-105 transition-transform">
       <a href="#">
         <img 
-          className="rounded-t-lg w-full h-48 object-cover" 
-          src="https://hips.hearstapps.com/hmg-prod/images/close-up-of-blossoming-rose-flower-royalty-free-image-1580853844.jpg" 
+          className="rounded-t-lg w-full h-48 object-contain" 
+          src={image} 
           alt="product image" 
         />
       </a>

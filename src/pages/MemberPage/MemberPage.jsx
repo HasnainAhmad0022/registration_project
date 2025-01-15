@@ -4,9 +4,12 @@ import backgroundlogo from "../../images/backgroundlogo.png";
 import Navbar from "../../components/Navbar/Navbar";
 import userRequest from "../../utils/userRequest/userRequest";
 import toast, { Toaster } from "react-hot-toast";
+import Loader from "../../components/Loader/Loader";
+import { Images } from "../../utils/ImagesConfig";
 
 const MemberPage = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const userData = JSON.parse(sessionStorage.getItem("userData"));
 
   // Create refs for CNIC inputs
@@ -154,6 +157,7 @@ const MemberPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     
     try {
       const submitData = new FormData();
@@ -208,6 +212,7 @@ const MemberPage = () => {
         if (ref.current) ref.current.value = '';
       });
 
+      setLoading(false);
       // Navigate after delay
       setTimeout(() => {
         navigate('/home-page');
@@ -215,6 +220,7 @@ const MemberPage = () => {
 
     } catch (err) {
       console.error("Error:", err);
+      setLoading(false);
       toast.error(
         err?.response?.data?.error ||
         err?.response?.data?.message ||
@@ -225,13 +231,14 @@ const MemberPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {loading && <Loader />}
       <Navbar />
       <div className="p-2 md:p-3 rounded-lg bg-gray-100">
         <div className="max-w-6xl mx-auto p-3 md:p-6 relative bg-white">
           {/* Watermark */}
           <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
             <img
-              src={backgroundlogo}
+              src={Images.logo}
               alt="Watermark"
               className="w-[500px] md:w-[700px] h-[500px] md:h-[700px] object-contain"
             />
@@ -248,7 +255,7 @@ const MemberPage = () => {
                   {/* Left logo */}
                   <div className="w-24 md:w-32 h-20 md:h-24 bg-white p-2 rounded-lg mb-2 md:mb-0">
                     <img
-                      src={backgroundlogo}
+                      src={Images.logo}
                       alt="Help System Logo"
                       className="w-full h-full object-contain"
                     />
@@ -269,7 +276,7 @@ const MemberPage = () => {
                   {/* Right QR code */}
                   <div className="w-24 md:w-32 h-20 md:h-24 bg-white p-2 rounded-lg mt-2 md:mt-0">
                     <img
-                      src={backgroundlogo}
+                      src={Images.logo}
                       alt="QR Code"
                       className="w-full h-full object-contain"
                     />

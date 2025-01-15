@@ -3,6 +3,7 @@ import Card from '../../components/Card/Card';
 import { useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Navbar from '../../components/Navbar/Navbar';
+import { Images } from '../../utils/ImagesConfig';
 
 const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -13,18 +14,21 @@ const HomePage = () => {
       id: 1,
       title: 'Member',
       buttonText: 'Clcik to Register Member',
+      image: Images.logo,
       path: '/register/member'
     },
     {
       id: 2,
       title: 'Student',
       buttonText: 'Click to Register Student',
+      image: Images.logo,
       path: '/register-student'
     },
     {
       id: 3,
       title: 'Disabled Person',
       buttonText: 'Click to Register Disabled Person',
+      image: Images.logo,
       path: '/register-disabled'
         
     }
@@ -51,6 +55,7 @@ const HomePage = () => {
             isLoading={isLoading}
             title={card.title}
             buttonText={card.buttonText}
+            image={Images.logo}
             onClick={() => handleCardClick(card.path)}
             />
           ))}

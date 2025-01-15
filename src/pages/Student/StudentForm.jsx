@@ -4,9 +4,11 @@ import { useNavigate } from "react-router-dom";
 import userRequest from "../../utils/userRequest/userRequest";
 import toast, { Toaster } from "react-hot-toast";
 import Navbar from "../../components/Navbar/Navbar";
+import Loader from "../../components/Loader/Loader";
 
 const StudentForm = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const userData = JSON.parse(sessionStorage.getItem("userData"));
 
   // Create refs for CNIC inputs
@@ -195,6 +197,7 @@ const StudentForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const submitData = new FormData();
       
@@ -239,6 +242,7 @@ const StudentForm = () => {
         if (ref.current) ref.current.value = '';
       });
 
+      setLoading(false);
       // Navigate after success
       setTimeout(() => {
         navigate('/home-page');
@@ -246,12 +250,14 @@ const StudentForm = () => {
 
     } catch (err) {
       console.error("Error:", err);
+      setLoading(false);
       toast.error(err?.response?.data?.message || "Submission failed");
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {loading && <Loader />}
       <Navbar />
       <div className="max-w-6xl mx-auto p-2 md:p-6 bg-white rounded-lg mt-3">
         <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
