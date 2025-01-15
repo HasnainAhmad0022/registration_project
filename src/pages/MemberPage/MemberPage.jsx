@@ -79,18 +79,20 @@ const MemberPage = () => {
   };
 
   const handleCnicInput = (e, index, refs, type) => {
-    const value = e.target.value;
-    if (!/^\d*$/.test(value)) {
+    const value = e.target.value; 
+    const singleDigit = value.slice(-1);
+    
+    if (!/^\d?$/.test(singleDigit)) {
       e.target.value = "";
       return;
     }
-    if (value.length === 1 && index < 12) {
+    e.target.value = singleDigit;
+    if (singleDigit && index < 12) {
       refs[index + 1].current.focus();
     }
-
     // Update CNIC in formData
     const allCnicInputs = refs.map(ref => ref.current.value);
-    allCnicInputs[index] = value;
+    allCnicInputs[index] = singleDigit;
     const cnicString = `${allCnicInputs.slice(0,5).join('')}-${allCnicInputs.slice(5,12).join('')}-${allCnicInputs[12] || ''}`;
     
     if (type === 'primary') {

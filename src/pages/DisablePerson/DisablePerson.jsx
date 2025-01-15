@@ -410,7 +410,7 @@ const DisablePerson = () => {
                 {[...Array(13)].map((_, i) => (
                   <React.Fragment key={`cnic-${i}`}>
                     <input
-                      type="text"
+                      type="number"
                       className="w-8 h-8 border border-gray-400 text-center bg-transparent"
                       maxLength="1"
                       ref={cnicRefs[i]}

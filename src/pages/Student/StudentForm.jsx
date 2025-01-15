@@ -65,12 +65,18 @@ const StudentForm = () => {
   };
 
   const handleCnicInput = (e, index, refs, type) => {
-    const value = e.target.value;
+    let value = e.target.value;
+    if (value.length > 1) {
+      value = value[value.length - 1];
+    }    
     if (!/^\d*$/.test(value)) {
-      e.target.value = "";
+      e.target.value = '';
       return;
     }
-    if (value.length === 1 && index < 12) {
+    e.target.value = value;
+
+    // Auto-focus next input if a digit was entered
+    if (value && index < 12) {
       refs[index + 1].current.focus();
     }
 
