@@ -453,7 +453,7 @@ const MemberPage = () => {
                   </div> */}
                   <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
                     <label className="block text-sm whitespace-nowrap min-w-[10px]">
-                      Date
+                      Date of Birth
                     </label>
                     <div className="flex items-center gap-1 w-full md:w-auto overflow-x-auto">
                       {[...Array(8)].map((_, i) => (
