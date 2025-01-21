@@ -294,7 +294,7 @@ const DisablePerson = () => {
                   {/* Right QR code */}
                   <div className="w-32 h-24 bg-white p-2 rounded-lg">
                     <img
-                      src={Images.logo}
+                      src={Images.logo2}
                       alt="QR Code"
                       className="w-full h-full object-contain"
                     />

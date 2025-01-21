@@ -289,7 +289,7 @@ const MemberPage = () => {
                   {/* Right QR code */}
                   <div className="w-24 md:w-32 h-20 md:h-24 bg-white p-2 rounded-lg mt-2 md:mt-0">
                     <img
-                      src={Images.logo}
+                      src={Images.logo2}
                       alt="QR Code"
                       className="w-full h-full object-contain"
                     />
