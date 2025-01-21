@@ -308,7 +308,7 @@ const DisablePerson = () => {
                   {/* Green pill background */}
                   <div className="absolute inset-0 bg-[#90CE5F] rounded-full -z-10 transform scale-x-125"></div>
                   <div className="bg-[#004F25] text-white px-12 py-2 rounded-lg font-bold text-xl">
-                    Membership Form
+                    Disable Person Form
                   </div>
                 </div>
               </div>
@@ -316,12 +316,12 @@ const DisablePerson = () => {
 
             {/* Membership ID */}
             <div className="text-right mt-16 mr-4 font-semibold">
-              MEMBERSHIP ID: _____________
+              DISABLE PERSON ID: _____________
             </div>
           </div>
 
           <h2 className="text-xl font-bold text-center mb-6 mt-10">
-            APPLICATION FORM FOR DISABILITY CERTIFICATE
+            APPLICATION FORM FOR DISABLE PERSON
           </h2>
 
           <form className="space-y-4 relative z-10" onSubmit={handleSubmit}>
@@ -364,7 +364,7 @@ const DisablePerson = () => {
             {/* Name and Father Name */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-                <label className="block text-sm whitespace-nowrap min-w-[150px]">
+                <label className="block text-sm whitespace-nowrap ">
                   Name
                 </label>
                 <input
@@ -442,7 +442,7 @@ const DisablePerson = () => {
             {/* CNIC and Date of Birth */}
             <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
               <label className="block text-sm whitespace-nowrap min-w-[20px]">
-                CNIC
+               Person CNIC
               </label>
               <div className="flex items-center gap-1 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
                 {[...Array(13)].map((_, i) => (
@@ -813,7 +813,7 @@ const DisablePerson = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
               {/* Front CNIC */}
               <div className="w-full">
-                <label className="block mb-2">CNIC Front Image</label>
+                <label className="block mb-2">Disable Person CNIC Front Image</label>
                 <div className="border-2 border-dashed border-gray-400 h-48 relative mb-2 w-full">
                   {cnicFrontPreview ? (
                     <img src={cnicFrontPreview} alt="CNIC Front" className="w-full h-full object-contain"/>
@@ -842,7 +842,7 @@ const DisablePerson = () => {
 
               {/* Back CNIC */}
               <div className="w-full">
-                <label className="block mb-2">CNIC Back Image</label>
+                <label className="block mb-2">Disable Person CNIC Back Image</label>
                 <div className="border-2 border-dashed border-gray-400 h-48 relative mb-2 w-full">
                   {cnicBackPreview ? (
                     <img src={cnicBackPreview} alt="CNIC Back" className="w-full h-full object-contain"/>

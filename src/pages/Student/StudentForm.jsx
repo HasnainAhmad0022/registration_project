@@ -299,7 +299,7 @@ const StudentForm = () => {
                 </div>
 
                 <div className="flex flex-col md:flex-row md:items-center gap-2">
-                  <label className="min-w-[100px]">CNIC</label>
+                  <label className="min-w-[100px]">Father CNIC</label>
                   <div className="flex gap-1 overflow-x-auto pb-2 md:pb-0">
                     {[...Array(13)].map((_, i) => (
                       <React.Fragment key={`father-cnic-${i}`}>
@@ -703,7 +703,7 @@ const StudentForm = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 p-2 md:p-4">
             {/* Front CNIC */}
             <div>
-              <label className="block mb-2">CNIC Front Image</label>
+              <label className="block mb-2">Father / Mother / Guardian CNIC Front Image</label>
               <div className="border-2 border-dashed border-gray-400 h-48 relative mb-2">
                 {cnicFrontPreview ? (
                   <img src={cnicFrontPreview} alt="CNIC Front" className="w-full h-full object-contain"/>
@@ -732,7 +732,7 @@ const StudentForm = () => {
 
             {/* Back CNIC */}
             <div>
-              <label className="block mb-2">CNIC Back Image</label>
+              <label className="block mb-2">Father / Mother / Guardian CNIC Back Image</label>
               <div className="border-2 border-dashed border-gray-400 h-48 relative mb-2">
                 {cnicBackPreview ? (
                   <img src={cnicBackPreview} alt="CNIC Back" className="w-full h-full object-contain"/>

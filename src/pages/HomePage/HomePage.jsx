@@ -13,7 +13,7 @@ const HomePage = () => {
     {
       id: 1,
       title: 'Member',
-      buttonText: 'Clcik to Register Member',
+      buttonText: 'Click to Register Member',
       image: Images.logo,
       path: '/register/member'
     },
