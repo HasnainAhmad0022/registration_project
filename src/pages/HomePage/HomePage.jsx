@@ -62,6 +62,7 @@ const HomePage = () => {
       </div>
 
       <Toaster />
+      <h2>HELLO WORLD</h2>
     </div>
   </div>
   );
