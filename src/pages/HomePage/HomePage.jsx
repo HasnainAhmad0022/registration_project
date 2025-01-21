@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Navbar from '../../components/Navbar/Navbar';
 import { Images } from '../../utils/ImagesConfig';
-
+import HomePageTable from './table';
 const HomePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -62,7 +62,8 @@ const HomePage = () => {
       </div>
 
       <Toaster />
-      <h2>HELLO WORLD</h2>
+     
+      <HomePageTable />
     </div>
   </div>
   );

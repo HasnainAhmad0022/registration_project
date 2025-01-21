@@ -6,6 +6,7 @@ import StudentForm from './pages/Student/StudentForm';
 import Login from './pages/Login/Login';
 import MemberPage from './pages/MemberPage/MemberPage';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
+import HomePageTable from './pages/HomePage/table';
 import { Toaster } from 'react-hot-toast';
 
 const App = () => {
@@ -43,6 +44,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <DisablePerson />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/table"
+            element={
+              <ProtectedRoute>
+                <HomePageTable />
               </ProtectedRoute>
             }
           />
