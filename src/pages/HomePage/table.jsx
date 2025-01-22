@@ -1,62 +1,74 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import userRequest from "../../utils/userRequest/userRequest";
+import toast from 'react-hot-toast';
+import DataTable from '../../components/Datagrid/DataTable';
+
 const HomePageTable = () => {
   const [data, setData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const userData = JSON.parse(sessionStorage.getItem("userData"));
+  const userId = userData?.data?.user?._id;
+
+  const columns = [
+    {
+      header: "Name",
+      key: "childName"
+    },
+    {
+      header: "CNIC No",
+      key: "cnicNo"
+    },
+    {
+      header: "Contact Number",
+      key: "contactNumber"
+    },
+    {
+      header: "Alter",
+      key: "productIds",
+      render: (item) => item.productIds.map(product => product.productName).join(', ')
+    },
+    {
+      header: "Actions",
+      render: (item) => (
+        <button className="px-5 py-2 border-blue-500 border text-blue-500 rounded transition duration-300 hover:bg-blue-700 hover:text-white focus:outline-none">
+          Done
+        </button>
+      )
+    }
+  ];
+
+  const fetchData = async () => {
+    try {
+      const res = await userRequest.get(`disable/get-all-alter-form-by-user-id/${userId}`);
+      setData(res.data.data);
+    } 
+    catch (err) {
+      toast.error(err?.response?.data?.message || err?.response?.data?.error || "Error fetching data");
+      console.error("Error fetching data:", err);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      const userId = sessionStorage.getItem("userId"); 
-      console.log("userId",userId);
-      // Assuming userId is stored in userData
-      const response = await userRequest.get(`disable/get-all-alter-form-by-user-id/${userId}`);
-      if (response.status === 200) {
-        setData(response.data.data); // Adjust based on your API response structure
-      }
-    };
-
     fetchData();
   }, []);
 
-  return (
-    <div class="font-sans overflow-x-auto mt-10">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-100 whitespace-nowrap">
-          <tr>
-            <th class="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Name
-            </th>
-            <th class="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              CNIC No
-            </th>
-            
-            <th class="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Contact Number
-            </th>
-            <th class="px-4 py-4 text-left text-xs font-semibold text-green-500 uppercase tracking-wider">
-              Alter
-            </th>
-            <th class="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Actions
-            </th>
-          </tr>
-        </thead>
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+  };
 
-        <tbody class="bg-white divide-y divide-gray-200 whitespace-nowrap">
-          {data.map((item) => (
-            <tr key={item._id}>
-              <td class="px-4 py-4 text-sm text-gray-800">{item.childName}</td>
-              <td class="px-4 py-4 text-sm text-gray-800">{item.cnicNo}</td>
-              <td class="px-4 py-4 text-sm text-gray-800">{item.contactNumber}</td>
-              <td class="px-4 py-4 text-sm text-green-800">{item.productIds.map(product => product.productName).join(', ')}</td>
-              <td class="px-4 py-4 text-sm text-gray-800">
-                <button class="text-green-600">Done</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+  return (
+    <DataTable
+      data={data}
+      columns={columns}
+      searchPlaceholder="Search records..."
+      showSearch={true}
+      showPagination={true}
+      currentPage={1}
+      totalItems={data.length}
+      itemsPerPage={10}
+      onSearch={handleSearch}
+      onPageChange={(page) => console.log('Page changed to:', page)}
+    />
   );
 };
 

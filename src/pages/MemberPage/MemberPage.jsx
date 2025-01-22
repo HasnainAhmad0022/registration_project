@@ -18,6 +18,7 @@ const MemberPage = () => {
 
   const initialFormState = {
     childName: "",
+    guardianName: "",
     cnicNo: "",
     relation: "father",
     relationCnic: "",
@@ -339,7 +340,7 @@ const MemberPage = () => {
                 </div>
               </div>
 
-              {/* Father/Husband */}
+              {/* Father/Husband and Guardian */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
@@ -354,6 +355,15 @@ const MemberPage = () => {
                       <option value="father">Father</option>
                       <option value="husband">Husband</option>
                     </select>
+                    <input
+                      type="text"
+                      name="guardianName"
+                      value={formData.guardianName}
+                      onChange={handleInputChange}
+                      placeholder="Guardian Name"
+                      className="border border-gray-400 bg-transparent p-1 flex-1"
+                      required
+                    />
                   </div>
                 </div>
 
