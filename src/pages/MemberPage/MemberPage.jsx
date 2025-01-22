@@ -360,7 +360,7 @@ const MemberPage = () => {
                       name="guardianName"
                       value={formData.guardianName}
                       onChange={handleInputChange}
-                      placeholder="Guardian Name"
+                      placeholder="Father/Husband Name"
                       className="border border-gray-400 bg-transparent p-1 flex-1"
                       required
                     />
