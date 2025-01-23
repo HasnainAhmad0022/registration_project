@@ -512,7 +512,7 @@ const MemberPage = () => {
               <div className="flex flex-col md:flex-row gap-2 md:items-center">
                 <label className="text-sm">Marital Status</label>
                 <div className="flex flex-wrap gap-4">
-                  {["single", "married", "divorced", "widow"].map((status) => (
+                  {["single", "married", "divorced", "widowed"].map((status) => (
                     <label key={status} className="flex items-center gap-1">
                       <input
                         type="radio"
