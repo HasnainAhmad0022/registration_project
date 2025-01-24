@@ -642,6 +642,7 @@ const MemberPage = () => {
                       <option value="">Select Type</option>
                       <option value="owned">Owned</option>
                       <option value="rented">Rented</option>
+                      <option value="living with other">living with other</option>
                     </select>
                   </div>
                   <div className="flex flex-col md:flex-row md:items-center gap-2">
