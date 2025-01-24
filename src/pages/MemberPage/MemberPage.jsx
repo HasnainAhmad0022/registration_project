@@ -512,7 +512,7 @@ const MemberPage = () => {
               <div className="flex flex-col md:flex-row gap-2 md:items-center">
                 <label className="text-sm">Marital Status</label>
                 <div className="flex flex-wrap gap-4">
-                  {["single", "married", "divorced", "widowed"].map((status) => (
+                  {["single", "married", "divorced", "widow"].map((status) => (
                     <label key={status} className="flex items-center gap-1">
                       <input
                         type="radio"
@@ -802,9 +802,9 @@ const MemberPage = () => {
                 {/* Disability */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-4">
-                    <label>Any Disability?</label>
+                    <label>Any disease?</label>
                     <select
-                      name="anyDisability"
+                      name="anydisease"
                       value={formData.anyDisability}
                       onChange={handleInputChange}
                       className="border border-gray-400 bg-transparent p-1"
