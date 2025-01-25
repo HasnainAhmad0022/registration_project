@@ -46,6 +46,8 @@ const MemberPage = () => {
       { name: "", class: "", age: "", SchoolName: "" },
       { name: "", class: "", age: "", SchoolName: "" }
     ],
+    disability: "",
+    disabilityDescription: "",
     addictiveDrugs: "",
     addictiveDrugsDescription: "",
     anyDisability: "",
@@ -529,6 +531,34 @@ const MemberPage = () => {
                         /> Female
                       </label>
                     </div>
+                  
+                   {/* Disability Drugs */}
+                <div className="space-y-2 flex flex-row">
+                  <div className="flex items-center gap-4">
+                    <label>Disability?</label>
+                    <select
+                      name="disability"
+                      value={formData.disability}
+                      onChange={handleInputChange}
+                      className="border border-gray-400 bg-transparent p-1"
+                      required
+                    >
+                      <option value="">Select</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
+                  {formData.disability === 'yes' && (
+                    <input
+                      type="text"
+                      name="disabilityDescription"
+                      value={formData.disabilityDescription}
+                      onChange={handleInputChange}
+                      placeholder="Please provide details"
+                      className="ml-3 w-full border border-gray-400 bg-transparent p-1"
+                    />
+                  )}
+                </div>
                   </div>
                 </div>
               </div>
@@ -667,6 +697,7 @@ const MemberPage = () => {
                       <option value="">Select Type</option>
                       <option value="owned">Owned</option>
                       <option value="rented">Rented</option>
+                      <option value="living with other">living with other</option>
                     </select>
                   </div>
                   <div className="flex flex-col md:flex-row md:items-center gap-2">
