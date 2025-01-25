@@ -109,10 +109,35 @@ const MemberPage = () => {
   const dobRefs = Array(8).fill(0).map(() => useRef(null));
   const handleDobInput = (e, index) => {
     const value = e.target.value;
+       
     if (!/^\d*$/.test(value)) {
       e.target.value = "";
       return;
     }
+
+    // If we're entering year digits (indexes 4-7)
+    if (index >= 4) {
+      const allDobInputs = dobRefs.map(ref => ref.current.value);
+      allDobInputs[index] = value;
+      
+      // Get the year being entered so far
+      const yearDigits = allDobInputs.slice(4, 8).join('');
+      
+      // If we have all 4 digits of the year
+      if (yearDigits.length === 4) {
+        const year = parseInt(yearDigits);
+        if (year < 1950 || year > 1985) {
+          // Invalid year - clear the year inputs
+          for (let i = 4; i < 8; i++) {
+            dobRefs[i].current.value = '';
+          }
+          toast.error('Year must be between 1950 and 1985');
+          return;
+        }
+      }
+    }
+
+    // Auto-focus next input
     if (value.length === 1 && index < 7) {
       dobRefs[index + 1].current.focus();
     }

@@ -40,6 +40,7 @@ const HomePageTable = () => {
   const fetchData = async () => {
     try {
       const res = await userRequest.get(`disable/get-all-alter-form-by-user-id/${userId}`);
+      console.log(res.data.data);
       setData(res.data.data);
     } 
     catch (err) {
