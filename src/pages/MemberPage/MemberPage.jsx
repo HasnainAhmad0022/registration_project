@@ -860,7 +860,7 @@ const MemberPage = () => {
                   <div className="flex items-center gap-4">
                     <label>Any disease?</label>
                     <select
-                      name="anydisease"
+                      name="anyDisability"
                       value={formData.anyDisability}
                       onChange={handleInputChange}
                       className="border border-gray-400 bg-transparent p-1"
