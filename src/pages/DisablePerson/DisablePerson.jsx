@@ -46,14 +46,6 @@ const DisablePerson = () => {
     phoneNo: '',
     presentAddress: '',
     permanentAddress: '',
-    applicantIsDeclearYesNo: '',
-    disabilityImpairment: '',
-    fitToWork: '',
-    typeOfAdvise: '',
-    referTo: '',
-    recomendationOfBoard: '',
-    recomendationOfBoard_1: '',
-    recomendationOfBoard_2: '',
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -683,131 +675,7 @@ const DisablePerson = () => {
               </button>
             </div>
 
-            {/* Replace the Assessment Board section in your JSX with this: */}
-            <div className="mt-8 space-y-4">
-              <h3 className="text-lg font-bold">
-                RECOMMENDATION OF THE ASSESSMENT BOARD
-              </h3>
-
-              <div className="space-y-4">
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-                  <label className="block text-sm whitespace-nowrap min-w-[150px]">
-                    Is Applicant Declared
-                  </label>
-                  <select
-                    className="w-full h-8 border border-gray-400 px-2 bg-transparent"
-                    value={formData.applicantIsDeclearYesNo}
-                    onChange={handleInputChange}
-                    name="applicantIsDeclearYesNo"
-                    required
-                  >
-                    <option value="">Select Option</option>
-                    <option value="yes">Yes</option>
-                    <option value="no">No</option>
-                  </select>
-                </div>
-
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-                  <label className="block text-sm whitespace-nowrap min-w-[150px]">
-                    Disability / Impairment
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full h-8 border border-gray-400 px-2 bg-transparent"
-                    value={formData.disabilityImpairment}
-                    onChange={handleInputChange}
-                    name="disabilityImpairment"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-                    <label className="block text-sm whitespace-nowrap min-w-[150px]">
-                      Fit to work
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full h-8 border border-gray-400 px-2 bg-transparent"
-                      value={formData.fitToWork}
-                      onChange={handleInputChange}
-                      name="fitToWork"
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-                    <label className="block text-sm whitespace-nowrap min-w-[150px]">
-                      Type of Advise
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full h-8 border border-gray-400 px-2 bg-transparent"
-                      value={formData.typeOfAdvise}
-                      onChange={handleInputChange}
-                      name="typeOfAdvise"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-                  <label className="block text-sm whitespace-nowrap min-w-[150px]">
-                    Refer To
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full h-8 border border-gray-400 px-2 bg-transparent"
-                    value={formData.referTo}
-                    onChange={handleInputChange}
-                    name="referTo"
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-                  <label className="block text-sm whitespace-nowrap min-w-[150px]">
-                    Recommendation
-                  </label>
-                  <input
-                    type="text"
-                    className="w-full h-8 border border-gray-400 px-2 bg-transparent"
-                    value={formData.recomendationOfBoard}
-                    onChange={handleInputChange}
-                    name="recomendationOfBoard"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-                    <label className="block text-sm whitespace-nowrap min-w-[50px]">
-                      1.
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full h-8 border border-gray-400 px-2 bg-transparent"
-                      value={formData.recomendationOfBoard_1}
-                      onChange={handleInputChange}
-                      name="recomendationOfBoard_1"
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-                    <label className="block text-sm whitespace-nowrap min-w-[50px]">
-                      2.
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full h-8 border border-gray-400 px-2 bg-transparent"
-                      value={formData.recomendationOfBoard_2}
-                      onChange={handleInputChange}
-                      name="recomendationOfBoard_2"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
+            
 
             {/* CNIC Images Upload Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
