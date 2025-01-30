@@ -13,7 +13,6 @@ const StudentForm = () => {
 
   // Create refs for CNIC inputs
   const fatherCnicRefs = Array(13).fill(0).map(() => useRef(null));
-  const motherCnicRefs = Array(13).fill(0).map(() => useRef(null));
   const guardianCnicRefs = Array(13).fill(0).map(() => useRef(null));
 
   // Create ref for guardian signature
@@ -29,8 +28,6 @@ const StudentForm = () => {
     childName: "",
     fatherName: "",
     fatherCnic: "",
-    motherName: "",
-    motherCnic: "",
     dataOfBirth: "",
     totalAge: "",
     bloodGroup: "",
@@ -88,7 +85,6 @@ const StudentForm = () => {
     
     const cnicMap = {
       'father': 'fatherCnic',
-      'mother': 'motherCnic',
       'guardian': 'guardianCnic'
     };
     
@@ -317,36 +313,9 @@ const StudentForm = () => {
                   </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row md:items-center gap-2">
-                  <label className="min-w-[100px]">Mother Name</label>
-                  <input
-                    type="text"
-                    name="motherName"
-                    value={formData.motherName}
-                    onChange={handleInputChange}
-                    className="border border-gray-400 w-full md:flex-1 p-1"
-                    required
-                  />
-                </div>
+              
 
-                <div className="flex flex-col md:flex-row md:items-center gap-2">
-                  <label className="min-w-[100px]">Mother CNIC</label>
-                  <div className="flex gap-1 overflow-x-auto pb-2 md:pb-0">
-                    {[...Array(13)].map((_, i) => (
-                      <React.Fragment key={`mother-cnic-${i}`}>
-                        <input
-                          type="number"
-                          className="w-8 h-8 border border-gray-400 text-center flex-shrink-0"
-                          maxLength="1"
-                          ref={motherCnicRefs[i]}
-                          onChange={(e) => handleCnicInput(e, i, motherCnicRefs, 'mother')}
-                          onKeyDown={(e) => handleKeyDown(e, motherCnicRefs, i)}
-                        />
-                        {(i === 4 || i === 11) && <span className="flex-shrink-0">-</span>}
-                      </React.Fragment>
-                    ))}
-                  </div>
-                </div>
+              
 
                 <div className="flex flex-col md:flex-row md:items-center gap-2">
                   <label className="min-w-[100px]">Date of Birth</label>
